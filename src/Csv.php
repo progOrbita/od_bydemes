@@ -31,7 +31,18 @@ class Csv extends ReadFiles
             return false;
         }
         $data = [];
+        
         $fileOpen = fopen($file, 'r');
+
+        // BOM as a string for comparison.
+        $bom = "\xef\xbb\xbf";
+        
+        // Progress file pointer and get first 3 characters to compare to the BOM string.
+        if (fgets($fileOpen, 4) !== $bom) {
+            // BOM not found - rewind pointer to start of file.
+            rewind($fileOpen);
+        }
+
         $header = fgetcsv($fileOpen, 0, ",");
 
         if (!$this->checkHeader($header)) {
