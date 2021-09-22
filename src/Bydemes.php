@@ -6,15 +6,17 @@ namespace OrbitaDigital\OdBydemes;
 
 use Db;
 
-if (!defined('_PS_VERSION_')) {
-    require_once '../../config/config.inc.php';
-    require_once '../../init.php';
-}
 
-class Bydemes{
-//el stock disponible es: quantity en ps_stock_available. Requiere del id_product (de ps_product)
-// el id_stock_available deberia sumarse si el id_product es el mismo
-    public static function seeStock(){
-        return(Db::getInstance()->executeS('SELECT pp.quantity FROM `ps_product` p INNER JOIN `ps_stock_available` pp ON p.id_product = pp.id_product WHERE p.id_supplier = 1'));
+class Bydemes
+{
+    //available stock -> quantity in ps_stock_available table, requires id_product (from ps_product table)
+    // id_stock_available must be grouped when id_product is the same
+    public static function getBydemesProducts()
+    {
+        return Db::getInstance()->executeS('SELECT p.reference, sa.quantity, pl.description, pl.description_short, pl.name, p.width, p.height, p.depth AS volume, p.reference, ma.name AS manufacturer
+        FROM `ps_product` p 
+        INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
+        INNER JOIN  `ps_product_lang` pl ON p.id_product = pl.id_product 
+        INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer WHERE p.id_supplier = 1 AND id_lang = 1');
     }
 }
