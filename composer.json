@@ -1,0 +1,15 @@
+{
+    "name": "alex-prog/od_bydemes",
+    "autoload": {
+        "psr-4": {
+            "OrbitaDigital\\OdBydemes\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "progOrbita",
+            "email": "88653237+progOrbita@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
