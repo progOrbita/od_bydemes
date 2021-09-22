@@ -98,6 +98,10 @@ class Csv extends ReadFiles
             if (!$data_file) {
                 return false;
             }
+            //no need to join data if is a single file
+            if (count($filesData) === 1) {
+                return $data_file;
+            }
             $csv_data[$id_lang] = $data_file;
         }
         $joinedData = [];
