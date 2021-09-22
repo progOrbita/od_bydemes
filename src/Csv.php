@@ -17,6 +17,11 @@ class Csv extends ReadFiles
     {
         $this->csv_header = $csv_header;
     }
+    protected function setHeader($header)
+    {
+        $this->csv_header = $header;
+    }
+
     /**
      * Read a file and returns the array with the data.
      * Open the file, r -> read mode only.
@@ -31,12 +36,12 @@ class Csv extends ReadFiles
             return false;
         }
         $data = [];
-        
+
         $fileOpen = fopen($file, 'r');
 
         // BOM as a string for comparison.
         $bom = "\xef\xbb\xbf";
-        
+
         // Progress file pointer and get first 3 characters to compare to the BOM string.
         if (fgets($fileOpen, 4) !== $bom) {
             // BOM not found - rewind pointer to start of file.
