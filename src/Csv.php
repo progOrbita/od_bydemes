@@ -8,14 +8,40 @@ use OrbitaDigital\OdBydemes\ReadFiles;
 
 class Csv extends ReadFiles
 {
+    private $url = '';
     private $csv_header = [];
+    private $parse_header = [];
+    private $delimiter = '';
+    private $length = 0;
+    //file which is going to be readed
+    private $fopened;
+
     /**
      * Constructor
      * @param array $csv_header Header expected in the csv files
      */
-    function __construct(array $csv_header)
+    function __construct(string $url, $parse_header, string $delimiter, int $length)
     {
-        $this->csv_header = $csv_header;
+        $this->url = $url;
+        if (!$this->checkFile($this->url, 'csv')) {
+            die($this->getLastError());
+        }
+        //open archive only once
+        $this->fopened = fopen($url, 'r');
+
+        //removing the BOM of csv
+        $bom = "\xef\xbb\xbf";
+        // Progress file pointer and get first 3 characters to compare to the BOM string.
+        if (fgets($this->fopened, 4) !== $bom) {
+            // BOM not found - rewind pointer to start of file.
+            rewind($this->fopened);
+        }
+
+        //csv_header = first csv row
+        $this->setHeader(fgetcsv($this->fopened, 0, ","));
+        $this->parse_header = $parse_header;
+        $this->delimiter = $delimiter;
+        $this->length = $length;
     }
     protected function setHeader($header)
     {
