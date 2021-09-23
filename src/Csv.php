@@ -8,6 +8,7 @@ use OrbitaDigital\OdBydemes\ReadFiles;
 
 class Csv extends ReadFiles
 {
+
     private $url = '';
     private $csv_header = [];
     private $parse_header = [];
@@ -43,7 +44,11 @@ class Csv extends ReadFiles
         $this->delimiter = $delimiter;
         $this->length = $length;
     }
-    protected function setHeader($header)
+    /**
+     * Set csv_header value
+     * @param $header array to be inserted
+     */
+    public function setHeader(array $header)
     {
         $this->csv_header = $header;
     }
@@ -56,39 +61,23 @@ class Csv extends ReadFiles
      * @param string $file csv to be readed
      * @return bool|array array with the file data or false if there's an error
      */
-    public function read(string $file)
+    public function read()
     {
-        if (!$this->checkFile($file, 'csv')) {
-            return false;
-        }
+
         $data = [];
-
-        $fileOpen = fopen($file, 'r');
-
-        // BOM as a string for comparison.
-        $bom = "\xef\xbb\xbf";
-
-        // Progress file pointer and get first 3 characters to compare to the BOM string.
-        if (fgets($fileOpen, 4) !== $bom) {
-            // BOM not found - rewind pointer to start of file.
-            rewind($fileOpen);
-        }
-
-        $header = fgetcsv($fileOpen, 0, ",");
-
-        if (!$this->checkHeader($header)) {
-            $this->lastError = 'header of <b>' . $file . '</b> is not fine';
-            return false;
-        }
-        while (($row = fgetcsv($fileOpen, 0, ",")) !== false) {
+        //Set the header the one I wanted (all fields)
+        $this->setHeader($this->parse_header);
+        $i = 0;
+        while ($i !== 30) {
+            $row = fgetcsv($this->fopened, 0, ",");
             //if the first value of the row is empty, skip it
             if (empty($row[0])) {
                 continue;
             }
-            array_push($data, array_combine($header, $row));
-            var_dump($data);
-            return false; //Not processing all the data
+            $i++;
+            array_push($data, array_combine($this->csv_header, $row));
         }
+        return $data; //to process only some rows instead of all of them
         //if header is right but content in totally empty
         if (empty($data)) {
             $this->lastError = 'File data is empty';
@@ -117,6 +106,7 @@ class Csv extends ReadFiles
             $this->lastError = 'csv information not found';
             return false;
         }
+
         //reading each file
         $joinedData = [];
 
