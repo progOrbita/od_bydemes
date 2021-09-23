@@ -112,24 +112,12 @@ class Csv extends ReadFiles
      */
     public function process(array $filesData)
     {
-        $csv_data = [];
         //If there is no files at all
         if (empty($filesData)) {
             $this->lastError = 'csv information not found';
             return false;
         }
         //reading each file
-        foreach ($filesData as $id_lang =>  $file) {
-            $data_file = $this->read($file);
-            if (!$data_file) {
-                return false;
-            }
-            //no need to join data if is a single file
-            if (count($filesData) === 1) {
-                return $data_file;
-            }
-            $csv_data[$id_lang] = $data_file;
-        }
         $joinedData = [];
 
         //each id_lang key contains the csv with that language csv
