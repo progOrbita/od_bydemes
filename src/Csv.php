@@ -131,11 +131,13 @@ class Csv extends ReadFiles
             $csv_data[$id_lang] = $data_file;
         }
         $joinedData = [];
+
         //each id_lang key contains the csv with that language csv
-        foreach ($csv_data as $id_lang => $lang_csv) {
+        foreach ($filesData as $id_lang => $lang_csv) {
             foreach ($lang_csv as $csv_values) {
-                $joinedData[$csv_values['Id']]['Titulo'][$id_lang] = $csv_values['Titulo'];
-                $joinedData[$csv_values['Id']]['Description'][$id_lang] = $csv_values['Description'];
+                foreach ($csv_values as $header_value => $row_value) {
+                    $joinedData[$csv_values[$id_lang]][$header_value] = $row_value;
+                }
             }
         }
         return $joinedData;
