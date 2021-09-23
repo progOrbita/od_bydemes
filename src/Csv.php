@@ -101,7 +101,7 @@ class Csv extends ReadFiles
      * @param array $header header of the file
      * @return bool false if headers dont match, true otherwise
      */
-    private function checkHeader(array $header): bool
+    public function checkHeader(array $header): bool
     {
         return $header === $this->csv_header;
     }
