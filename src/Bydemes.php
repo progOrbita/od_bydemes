@@ -34,10 +34,42 @@ class Bydemes
         //var_dump($data);
         //key2 -> header values
         //value2 ->  row value
-        foreach ($data as $row => $row_values) {
-            $full[] = $this->getRowInfo($row_values['reference']);
+
+        //Data = array with the references
+        //bydemes_products = array with the bydemes products in the database key = reference
+
+        $bydemes_products = $this->getBydemesProducts();
+        if(!$bydemes_products){
+            return false;
         }
-        return $full;
+        $tableContent = '';
+        $tableContent .= '<table>
+        <thead><th>Referencia</th><th>Existe</th><th>Values</th></thead><tbody>';
+        foreach ($data as $csv_values) {
+            $csv_ref = $csv_values['reference'];
+            if(array_key_exists($csv_ref,$bydemes_products)){
+                $tableContent .= '<tr><td>'.$csv_values['reference'].'</td><td>existe</td>';
+                //obtaining the fields if exists in both. should be done here. Before, managing the different data.
+                foreach ($csv_values as $key => $value) {
+                    $formatedValues = $this->formatCsv($csv_values);
+                    if(!isset($bydemes_products[$csv_ref][$key])){
+                        continue;
+                    }
+                    if($bydemes_products[$csv_ref][$key] != $formatedValues[$key]){
+                        $tableContent .= '<td>'.$key.' valor diferente</td>';
+                    }
+                    else{
+                        $tableContent .= '<td>'.$key.' valor igual</td>';
+                    }
+                }
+                $tableContent .= '</tr>';
+            }
+            else{
+                $tableContent .= '<tr><td>'.$csv_ref.'</td><td>no existe</td></tr>';
+            }
+        }
+        $tableContent .= '</tbody></table>';
+        return $tableContent;
     }
     public function getRowInfo(string $ref){
         return Db::getInstance()->executeS('SELECT p.reference, p.width, p.height, p.depth AS volume, p.reference FROM `ps_product` p WHERE p.reference = "'.$ref.'"');
