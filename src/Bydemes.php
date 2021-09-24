@@ -70,5 +70,47 @@ class Bydemes
         $tableContent .= '</tbody></table>';
         return $tableContent;
     }
+    /**
+     * To format the Csv fields as the prestashop database does
+     */
+    public function formatCsv(array $csv_values){
+        foreach ($csv_values as $header => $row_value) {
+            switch($header){
+                //replace needed because numbers use . not ,
+                case 'price':
+                $csv_values[$header] = str_replace(",",".",$row_value);
+                break;
+                //For dimensions, changes letters to 0 (after removing lots of empty space)
+                case 'width':
+                case 'length':
+                case 'height':
+                case 'depth':
+                    $csv_values[$header] = preg_replace('/[a-z]+/i','',trim($row_value));   
+                    if(empty($row_value)){
+                        $csv_values[$header] = 0;
+                    }     
+                break;
+                //replace if there's "" to only one. Then removes " at the beggining and the end if they exists.
+                case 'name':
+                $inches = str_replace('""','"',$row_value);
+                $csv_values[$header] = preg_replace('/^"|"$/','',$inches);
+                break;
+                //database keeps <p> in the field
+                case 'description_short':
+                $csv_values[$header] = '<p>'.trim($row_value).'</p>';
+                break;
+                //Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
+                //It may have empty spaces and isn't closed in csv with <p>, which I need to add to compare both values
+                case 'description':
+                    $desc_clean = trim($row_value);
+                    stristr($desc_clean,'<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>'.$desc_clean.'</p>' ;
+
+                $csv_values[$header] = html_entity_decode($desc_encoded,ENT_NOQUOTES,'UTF-8');
+            }
+        }
+            //  if($csv_values['reference']== 'FOC-301'){
+            //      Tools::dieObject($csv_values);
+            //  }
+        return $csv_values;
     }
 }
