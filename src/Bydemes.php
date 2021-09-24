@@ -48,17 +48,15 @@ class Bydemes
             $csv_ref = $csv_values['reference'];
             if(array_key_exists($csv_ref,$bydemes_products)){
                 $tableContent .= '<tr><td>'.$csv_values['reference'].'</td><td>existe</td>';
-                //obtaining the fields if exists in both. should be done here. Before, managing the different data.
+                //formats values from csv to be compared with the database ones
+                $formatedValues = $this->formatCsv($csv_values);
                 foreach ($csv_values as $key => $value) {
-                    $formatedValues = $this->formatCsv($csv_values);
                     if(!isset($bydemes_products[$csv_ref][$key])){
                         continue;
                     }
-                    if($bydemes_products[$csv_ref][$key] != $formatedValues[$key]){
+                    //removes 0 from database fields. Shows if values are different
+                    if(trim($bydemes_products[$csv_ref][$key]) != $formatedValues[$key]){
                         $tableContent .= '<td>'.$key.' valor diferente</td>';
-                    }
-                    else{
-                        $tableContent .= '<td>'.$key.' valor igual</td>';
                     }
                 }
                 $tableContent .= '</tr>';
