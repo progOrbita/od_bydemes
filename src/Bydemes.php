@@ -8,16 +8,27 @@ use Db;
 
 class Bydemes
 {
-    //available stock -> quantity in ps_stock_available table, requires id_product (from ps_product table)
-    // id_stock_available must be grouped when id_product is the same
-    public static function getBydemesProducts()
+    //get all products from Bydemes supplier
+
+    public function getBydemesProducts()
     {
-        return Db::getInstance()->executeS('SELECT p.reference, sa.quantity, pl.description, pl.description_short, pl.name, p.width, p.height, p.depth AS volume, p.reference, ma.name AS manufacturer
+        $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.reference, ma.name AS ma_name
         FROM `ps_product` p 
         INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
-        INNER JOIN  `ps_product_lang` pl ON p.id_product = pl.id_product 
-        INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer WHERE p.id_supplier = 1 AND id_lang = 1');
+        INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
+        INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
+        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
+        if($query === false){
+            return false;
+        }
+        foreach ($query as $value) {
+            foreach ($value as $key2 => $value2) {
+                $bydemes_product[$value['reference']][$key2] = $value2;
+            }
+        }
+        return $bydemes_product;
     }
+    
     public function processCsv(array $data)
     {
         //var_dump($data);
