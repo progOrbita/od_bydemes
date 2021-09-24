@@ -11,7 +11,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 $reader = new Csv('rates/CL131545_product_list.csv',
-    ['id_product','reference','model','manufacturer_name','stock','active','precio','description','description_short','name','category','family','subfamily','comptaible_products','imageURL','EAN','length','width','height','depth','weight','product_url'],
+    ['id_product','reference','model','manufacturer_name','stock','active','price','description','description_short','name','category','family','subfamily','comptaible_products','imageURL','EAN','length','width','height','depth','weight','product_url'],
 ',',100);
 
 if (!$reader->checkHeader(['id','referencia','Model','Brand','Stock','activo','PVP','Description','Short description','Title','Category','Family','SubFamily','Compatible products','imageURL','EAN','length','width','height','volume','weight','Product URL'])) {
@@ -19,5 +19,9 @@ if (!$reader->checkHeader(['id','referencia','Model','Brand','Stock','activo','P
 }
 $bydemes = new Bydemes();
 $data_file = $reader->read();
-$bydemes_products = Bydemes::getBydemesProducts();
 
+$result = $bydemes->processCsv($data_file);
+if(!$result){
+    die('query couldnt be done');
+}
+echo $result;
