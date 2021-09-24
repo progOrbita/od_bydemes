@@ -69,7 +69,9 @@ class Bydemes
         return $tableContent;
     }
     /**
-     * To format the Csv fields as the prestashop database does
+     * Format the Csv values so they can be compared with the ones inserted on the database.
+     * @param array $csv_values array with the values of the csv of a row (chosed by reference)
+     * @return array $csv_values array with the formated values
      */
     public function formatCsv(array $csv_values){
         foreach ($csv_values as $header => $row_value) {
@@ -86,7 +88,7 @@ class Bydemes
                     $csv_values[$header] = preg_replace('/[a-z]+/i','',trim($row_value));   
                     if(empty($row_value)){
                         $csv_values[$header] = 0;
-                    }     
+                    }
                 break;
                 //replace if there's "" to only one. Then removes " at the beggining and the end if they exists.
                 case 'name':
