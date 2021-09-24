@@ -65,9 +65,8 @@ class Csv extends ReadFiles
     {
 
         $data = [];
-        //Set the header the one I wanted (all fields)
-        $this->setHeader($this->parse_header);
-        $i = 0;
+
+        $i = 1;
         while ($i !== 30) {
             $row = fgetcsv($this->fopened, 0, ",");
             //if the first value of the row is empty, skip it
@@ -75,9 +74,9 @@ class Csv extends ReadFiles
                 continue;
             }
             $i++;
-            array_push($data, array_combine($this->csv_header, $row));
+            array_push($data, array_combine($this->parse_header, $row));
         }
-        return $data; //to process only some rows instead of all of them
+        return $data; 
         //if header is right but content in totally empty
         if (empty($data)) {
             $this->lastError = 'File data is empty';
