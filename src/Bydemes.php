@@ -31,7 +31,6 @@ class Bydemes
     
     public function processCsv(array $data)
     {
-        //var_dump($data);
         //key2 -> header values
         //value2 ->  row value
 
@@ -71,7 +70,5 @@ class Bydemes
         $tableContent .= '</tbody></table>';
         return $tableContent;
     }
-    public function getRowInfo(string $ref){
-        return Db::getInstance()->executeS('SELECT p.reference, p.width, p.height, p.depth AS volume, p.reference FROM `ps_product` p WHERE p.reference = "'.$ref.'"');
     }
 }
