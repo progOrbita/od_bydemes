@@ -67,7 +67,8 @@ class Csv extends ReadFiles
         $data = [];
 
         $i = 1;
-        while ($i !== 30) {
+        while ($i !== 450) {
+
             $row = fgetcsv($this->fopened, 0, ",");
             //if the first value of the row is empty, skip it
             if (empty($row[0])) {
