@@ -66,14 +66,12 @@ class Csv extends ReadFiles
 
         $data = [];
 
-        $i = 1;
-        while($row = fgetcsv($this->fopened, 0, ",") !== false){
-            $row = fgetcsv($this->fopened, 0, ",");
+        while (($row = fgetcsv($this->fopened, 0, ",")) !== false) {
+
             //if the first value of the row is empty, skip it
             if (empty($row[0])) {
                 continue;
             }
-            $i++;
             array_push($data, array_combine($this->parse_header, $row));
         }
         return $data;
