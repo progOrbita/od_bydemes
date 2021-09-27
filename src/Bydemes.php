@@ -21,7 +21,7 @@ class Bydemes
      * Query that obtains the products from bydemes supplier
      * @return bool|array false if query have an error, array obtained from the query
      */
-    public function getBydemesProducts()
+    private function getBydemesProducts()
     {
         $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.weight, p.reference ,ma.name AS manufacturer_name, sa.quantity AS stock
         FROM `ps_product` p 
@@ -95,11 +95,14 @@ class Bydemes
     }
     /**
      * creates the table with the information obtained from processing the csv information within the database
-     * @return string html of the table
+     * @return bool|string false if there was an error processing the information, string with the table otherwise
      */
-    public function getProcessTable(): string
+    public function getProcessTable()
     {
         $csv_processed = $this->processCsv();
+        if(!$csv_processed){
+            return false;
+        }
         $tableBase = '<html><head>
             <style>
                 td {
@@ -134,7 +137,7 @@ class Bydemes
      * Process the csv information, checking if fields exist or if they are different within the database
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
-    public function processCsv()
+    private function processCsv()
     {
 
         //Data = array with the references
@@ -180,7 +183,7 @@ class Bydemes
      * @param array $csv_values array with the values of the csv of a row (chosed by reference)
      * @return array $csv_values array with the formated values
      */
-    public function formatCsv(array $csv_values): array
+    private function formatCsv(array $csv_values): array
     {
         foreach ($csv_values as $header => $row_value) {
             switch ($header) {
