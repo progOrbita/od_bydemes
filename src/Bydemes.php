@@ -46,11 +46,11 @@ class Bydemes
     public function saveProducts(): array
     {
         $update = [];
-        foreach ($this->changed_csv as $ref => $value) {
+        foreach ($this->changed_csv as $ref => $ref_values) {
             $setQuery = 'SET ';
             //Some processing about what table the values need to be updated
-            foreach ($value as $key2 => $value2) {
-                switch ($key2) {
+            foreach ($ref_values as $field => $field_value) {
+                switch ($field) {
                     case 'manufacturer_name':
 
                         $setQuery .= "p.`id_manufacturer` = (SELECT `id_manufacturer` FROM `ps_manufacturer` WHERE `name` = '" . $value2 . "' ), ";
@@ -60,23 +60,23 @@ class Bydemes
                     case 'description':
                     case 'description_short':
 
-                        $setQuery .= "pl.`" . $key2 . "` = '" . $value2 . "', ";
+                        $setQuery .= "pl.`" . $field . "` = '" . $field_value . "', ";
                         break;
 
                     case 'stock':
 
-                        $setQuery .= "sa.`quantity` = " . $value2 . ", ";
+                        $setQuery .= "sa.`quantity` = " . $field_value . ", ";
 
                         break;
                     case 'price':
 
-                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ps." . $key2 . " = " . $value2 . ", ";
+                        $setQuery .= "p.`" . $field . "` = " . $field_value . ", ps." . $field . " = " . $field_value . ", ";
 
                         break;
 
                     default:
                         //for values from ps_product table
-                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ";
+                        $setQuery .= "p.`" . $field . "` = " . $field_value . ", ";
 
                         break;
                 }
@@ -120,14 +120,14 @@ class Bydemes
         <thead><th>Reference</th><th>In database?</th><th>Changed values</th></thead>
         <tbody>';
         $tableBody = '';
-        foreach ($csv_processed as $key => $value) {
+        foreach ($csv_processed as $ref => $value) {
             if ($value === false) {
                 continue;
             }
-            $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
-            //Shows differents values from the database
-            foreach ($value as $key2 => $value2) {
-                $tableBody .= '<td>' . $key2 . ' ' . $value2 . '</td>';
+            $tableBody .= '<tr><td>' . $ref . '</td><td>exist</td>';
+            //Shows wrong values beetwen database and csv
+            foreach ($value as $ref_header => $ref_value) {
+                $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
             }
             $tableBody .= '</tr>';
         }

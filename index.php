@@ -41,11 +41,11 @@ if (isset($_GET['write'])) {
     if (empty($save)) {
         die('values from csv are already updated');
     }
-    foreach ($save as $key => $value) {
+    foreach ($save as $save_ref => $value) {
         if (!$value) {
-            echo '<br/> Values from ' . $key . ' couldnt be updated';
+            echo '<br/> Values from ' . $save_ref . ' couldnt be updated';
             continue;
         }
-        echo '<br/>Values from reference ' . $key . ' were updated';
+        echo '<br/>Values from reference ' . $save_ref . ' were updated';
     }
 }
