@@ -27,5 +27,22 @@ $result = $bydemes->processCsv();
 if (!$result) {
     die('query couldnt be done');
 }
-
 echo $bydemes->getProcessTable();
+
+if(isset($_GET['write'])){
+    $date = $_GET['write'];
+    $currentDate = date('d_m_Y');
+    if($date !== $currentDate){
+        die('write today to update the values');
+    }
+    else{
+        $save = $bydemes->saveProducts();
+        if($save === false){
+            die('Values couldnt be updated');
+        }
+        else{
+            die('Values were updated');
+        }
+    }
+}
+
