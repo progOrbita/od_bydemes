@@ -17,6 +17,10 @@ class Bydemes
     {
         $this->csv_data = $csv_data;
     }
+    /**
+     * Query that obtains the products from bydemes supplier
+     * @return bool|array false if query have an error, array obtained from the query
+     */
     public function getBydemesProducts()
     {
         $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.reference, ma.name AS ma_name
@@ -71,8 +75,6 @@ class Bydemes
      */
     public function processCsv()
     {
-        //key2 -> header values
-        //value2 ->  row value
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
@@ -142,7 +144,7 @@ class Bydemes
                     $csv_values[$header] = '<p>' . trim($row_value) . '</p>';
                     break;
                     //Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
-                    //It may have empty spaces and isn't closed in csv with <p>, which I need to add to compare both values
+                    //It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
                 case 'description':
                     $desc_clean = trim($row_value);
                     stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
@@ -150,9 +152,6 @@ class Bydemes
                     $csv_values[$header] = html_entity_decode($desc_encoded, ENT_NOQUOTES, 'UTF-8');
             }
         }
-            //  if($csv_values['reference']== 'FOC-301'){
-            //      Tools::dieObject($csv_values);
-            //  }
         return $csv_values;
     }
 }
