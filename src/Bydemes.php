@@ -87,13 +87,14 @@ class Bydemes
 
             $update[$ref] = Db::getInstance()->execute($query);
         }
+        //return reference with true/false if query was done
         return $update;
     }
     /**
-     * creates the table with the information obtained from processing the csv information with the database
+     * creates the table with the information obtained from processing the csv information within the database
      * @return string html of the table
      */
-    public function getProcessTable()
+    public function getProcessTable(): string
     {
         $csv_processed = $this->processCsv();
         $tableBase = '<html><head>
@@ -108,7 +109,7 @@ class Bydemes
         <body>
             <h2>Update products</h2>
             <table>
-        <thead><th>Referencia</th><th>In database?</th><th>Changed values</th></thead>
+        <thead><th>Reference</th><th>In database?</th><th>Changed values</th></thead>
         <tbody>';
         $tableBody = '';
         foreach ($csv_processed as $key => $value) {
@@ -161,22 +162,22 @@ class Bydemes
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
-                    if (strlen($bydemes_products[$csv_ref][$field]) > 40) {     
-                        $processedValues[$csv_ref][$field] = 'is changed ' . substr($bydemes_products[$csv_ref][$field], 0, 100) . ' ...';
+                    if (strlen($bydemes_products[$csv_ref][$field]) > 40) {
+                        $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref][$field], 0, 100) . ' ...</b>';
                         continue;
                     }
-                    $processedValues[$csv_ref][$field] = 'from : ' . trim($bydemes_products[$csv_ref][$field], '\0') . ' to ' . $formatedValues[$field];
+                    $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
                 }
             }
         }
         return $processedValues;
     }
     /**
-     * Format the Csv values so they can be compared with the ones inserted on the database.
+     * Format the Csv values so they can be compared with the values on the database.
      * @param array $csv_values array with the values of the csv of a row (chosed by reference)
      * @return array $csv_values array with the formated values
      */
-    public function formatCsv(array $csv_values)
+    public function formatCsv(array $csv_values): array
     {
         foreach ($csv_values as $header => $row_value) {
             switch ($header) {
