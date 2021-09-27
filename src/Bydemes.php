@@ -10,6 +10,7 @@ class Bydemes
 {
     private $csv_data = [];
     private $changed_csv = [];
+    private $brands = [3 => 'Airspace', 4 => 'Nittan', 5 => 'Crow'];
     /**
      * constructor
      */
@@ -52,8 +53,8 @@ class Bydemes
             foreach ($ref_values as $field => $field_value) {
                 switch ($field) {
                     case 'manufacturer_name':
-
-                        $setQuery .= "p.`id_manufacturer` = (SELECT `id_manufacturer` FROM `ps_manufacturer` WHERE `name` = '" . $value2 . "' ), ";
+                        $brand = array_search($field_value, $this->brands);
+                        $setQuery .= "p.`id_manufacturer` = " . $brand . ", ";
                         break;
 
                     case 'name':
