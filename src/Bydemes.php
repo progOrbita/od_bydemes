@@ -69,11 +69,13 @@ class Bydemes
 
                         break;
                     case 'price':
-                        //for values from ps_product table
-                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ps." . $key2 . " = " . $value2 . ", ";
-                        break;
-                    default:
 
+                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ps." . $key2 . " = " . $value2 . ", ";
+
+                        break;
+
+                    default:
+                        //for values from ps_product table
                         $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ";
 
                         break;
@@ -100,7 +102,7 @@ class Bydemes
     public function getProcessTable()
     {
         $csv_processed = $this->processCsv();
-        if(!$csv_processed){
+        if (!$csv_processed) {
             return false;
         }
         $tableBase = '<html><head>
