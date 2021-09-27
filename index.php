@@ -27,4 +27,5 @@ $result = $bydemes->processCsv();
 if (!$result) {
     die('query couldnt be done');
 }
+$save = $bydemes->saveCsv();
 echo $bydemes->getProcessTable();

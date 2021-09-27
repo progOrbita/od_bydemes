@@ -73,6 +73,57 @@ class Bydemes
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
+     * Table with the save info
+     */
+    public function getSaveTable()
+    {
+        $csv_save = $this->saveCsv();
+        $tableBase = '
+        <head>
+            <style>
+                td {
+                    border: 1px solid black;
+                    padding: 4px;
+                }
+            </style>
+        </head>
+        <table>
+        <thead>
+            <th>Reference</th>
+            <th>Manufacturer</th>
+            <th>Stock</th>
+            <th>Price</th>
+            <th>description</th>
+            <th>Short description</th>
+            <th>Name</th>
+            <th>Width</th>
+            <th>Height</th>
+            <th>Volume</th>
+            <th>Weight</th>
+        </thead>
+        <tbody>';
+        $tableBody = '';
+        $show_vals = ['reference', 'manufacturer_name', 'stock', 'price', 'description', 'description_short', 'name', 'width', 'height', 'depth', 'weight'];
+        foreach ($csv_save as $key => $value) {
+            $tableBody .= '<tr>';
+            foreach ($value as $key2 => $value2) {
+
+                if (!in_array($key2, $show_vals)) {
+                    continue;
+                }
+                //$clean_val = trim(substr($value2,0,14));
+                if (empty($value2)) {
+                    $value2 = 0;
+                }
+                $tableBody .= '<td>' . $value2 . '</td>';
+            }
+            $tableBody .= '</tr>';
+        }
+        $tableEnd = '</tbody></table>';
+
+        return $tableBase . $tableBody . $tableEnd;
+    }
+    /**
      * checks if reference must be saved in the database
      */
     public function saveCsv()
