@@ -9,7 +9,6 @@ use Db;
 class Bydemes
 {
     private $csv_data = [];
-    
     /**
      * constructor
      */
@@ -43,12 +42,18 @@ class Bydemes
      * creates the table with the information
      * @return string html of the table
      */
-    public function getTable()
+    public function getProcessTable()
     {
         $csv_processed = $this->processCsv();
-
-        $tableBase = '<table>
-        <thead><th>Referencia</th><th>Existe</th><th>Values</th></thead>
+        $tableBase = '<head>
+            <style>
+                td {
+                    border: 1px solid black;
+                    padding: 4px;
+                }
+            </style>
+        </head><table>
+        <thead><th>Referencia</th><th>In database?</th><th>Changed values</th></thead>
         <tbody>';
         $tableBody = '';
         foreach ($csv_processed as $key => $value) {
@@ -58,9 +63,7 @@ class Bydemes
                 $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
                 //Shows differents values from the database
                 foreach ($value as $key2 => $value2) {
-                    if (gettype($value2) !== 'boolean') {
-                        $tableBody .= '<td>' . $key2 . ' values are differents: ' . $value2 . '</td>';
-                    }
+                    $tableBody .= '<td>' . $key2 . ': ' . $value2 . '</td>';
                 }
                 $tableBody .= '</tr>';
             }
