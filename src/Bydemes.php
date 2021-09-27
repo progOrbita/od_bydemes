@@ -87,7 +87,6 @@ class Bydemes
             return false;
         }
         $processedValues = [];
-        $dif_val = '';
 
         foreach ($this->csv_data as $csv_values) {
             $csv_ref = $csv_values['reference'];
@@ -97,7 +96,7 @@ class Bydemes
                 $processedValues[$csv_ref] = false;
                 continue;
             }
-            $processedValues[$csv_ref][] = true;
+
 
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
