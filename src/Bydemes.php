@@ -108,7 +108,7 @@ class Bydemes
                 }
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
-                    $processedValues[$csv_ref][$field] = $bydemes_products[$csv_ref][$field] . ' y ' . $formatedValues[$field];
+                    $processedValues[$csv_ref][$field] = trim($bydemes_products[$csv_ref][$field], '\0') . ' to ' . $formatedValues[$field];
                 }
             }
         }
