@@ -53,7 +53,7 @@ class Bydemes
                 switch ($key2) {
                     case 'manufacturer_name':
 
-                        $setQuery .= "ma.`name` = '" . $value2 . "', ";
+                        $setQuery .= "p.`id_manufacturer` = (SELECT `id_manufacturer` FROM `ps_manufacturer` WHERE `name` = '" . $value2 . "' ), ";
                         break;
 
                     case 'name':
@@ -72,7 +72,7 @@ class Bydemes
                     default:
 
                         $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ";
-                        
+
                         break;
                 }
             }
