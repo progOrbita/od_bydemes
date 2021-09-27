@@ -73,6 +73,25 @@ class Bydemes
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
+     * checks if reference must be saved in the database
+     */
+    public function saveCsv()
+    {
+        //It saves an array with the references and their row values
+        $bydemes_products = $this->getBydemesProducts();
+        foreach ($this->csv_data as $csv_values) {
+            $csv_ref = $csv_values['reference'];
+
+            //if reference dont exist in the database
+            if (!array_key_exists($csv_ref, $bydemes_products)) {
+                //echo $csv_ref.' ni esta <br/>';
+                $refs_info[$csv_ref] = $csv_values;
+            }
+            $processedValues[$csv_ref] = 'no hace falta';
+        }
+        return $refs_info;
+    }
+    /**
      * Process the csv information, checking if fields exist or if they are different within the database
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
