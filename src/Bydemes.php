@@ -35,8 +35,41 @@ class Bydemes
         }
         return $bydemes_product;
     }
+    /**
+     * creates the table with the information
+     * @return string html of the table
+     */
+    public function getTable()
+    {
+        $csv_processed = $this->processCsv();
 
-    public function processCsv(array $data)
+        $tableBase = '<table>
+        <thead><th>Referencia</th><th>Existe</th><th>Values</th></thead>
+        <tbody>';
+        $tableBody = '';
+        foreach ($csv_processed as $key => $value) {
+            if ($value === false) {
+                $tableBody .= '<tr><td>' . $key . '</td><td>doesnt exist</td></tr>';
+            } else {
+                $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
+                //Shows differents values from the database
+                foreach ($value as $key2 => $value2) {
+                    if (gettype($value2) !== 'boolean') {
+                        $tableBody .= '<td>' . $key2 . ' values are differents: ' . $value2 . '</td>';
+                    }
+                }
+                $tableBody .= '</tr>';
+            }
+        }
+        $tableEnd = '</tbody></table>';
+
+        return $tableBase . $tableBody . $tableEnd;
+    }
+    /**
+     * Process the csv information, checking if fields exist or if they are different within the database
+     * @return bool|array false if there's an error in the query. Array with the processed information
+     */
+    public function processCsv()
     {
         //key2 -> header values
         //value2 ->  row value
@@ -48,31 +81,33 @@ class Bydemes
         if (!$bydemes_products) {
             return false;
         }
-        $tableContent = '';
-        $tableContent .= '<table>
-        <thead><th>Referencia</th><th>Existe</th><th>Values</th></thead><tbody>';
-        foreach ($data as $csv_values) {
+        $processedValues = [];
+        $dif_val = '';
+
+        foreach ($this->csv_data as $csv_values) {
             $csv_ref = $csv_values['reference'];
-            if (array_key_exists($csv_ref, $bydemes_products)) {
-                $tableContent .= '<tr><td>' . $csv_values['reference'] . '</td><td>existe</td>';
-                //formats values from csv to be compared with the database ones
-                $formatedValues = $this->formatCsv($csv_values);
-                foreach ($csv_values as $key => $value) {
-                    if (!isset($bydemes_products[$csv_ref][$key])) {
-                        continue;
-                    }
-                    //removes 0 from database fields. Shows if values are different
-                    if (trim($bydemes_products[$csv_ref][$key]) != $formatedValues[$key]) {
-                        $tableContent .= '<td>' . $key . ' valor diferente</td>';
-                    }
+
+            //if reference dont exist in the database
+            if (!array_key_exists($csv_ref, $bydemes_products)) {
+                $processedValues[$csv_ref] = false;
+                continue;
+            }
+            $processedValues[$csv_ref][] = true;
+
+            //formats values from csv to be compared with the database ones
+            $formatedValues = $this->formatCsv($csv_values);
+
+            foreach ($csv_values as $field => $value) {
+                if (!isset($bydemes_products[$csv_ref][$field])) {
+                    continue;
                 }
-                $tableContent .= '</tr>';
-            } else {
-                $tableContent .= '<tr><td>' . $csv_ref . '</td><td>no existe</td></tr>';
+                //removes 0 from database fields. Store if values are different
+                if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
+                    $processedValues[$csv_ref][$field] = $bydemes_products[$csv_ref][$field] . ' y ' . $formatedValues[$field];
+                }
             }
         }
-        $tableContent .= '</tbody></table>';
-        return $tableContent;
+        return $processedValues;
     }
     /**
      * Format the Csv values so they can be compared with the ones inserted on the database.
