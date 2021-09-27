@@ -29,20 +29,23 @@ if (!$result) {
 }
 echo $bydemes->getProcessTable();
 
-if(isset($_GET['write'])){
+if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
-    if($date !== $currentDate){
+    if ($date !== $currentDate) {
         die('write today to update the values');
     }
-    else{
-        $save = $bydemes->saveProducts();
-        if($save === false){
-            die('Values couldnt be updated');
+    $save = $bydemes->saveProducts();
+    //no products to update
+    if (empty($save)) {
+        die('values from csv are already updated');
+    }
+
+    foreach ($save as $key => $value) {
+        if (!$value) {
+            echo '<br/> Values from ' . $key . ' couldnt be updated';
+            continue;
         }
-        else{
-            die('Values were updated');
-        }
+        echo '<br/>Values from reference ' . $key . ' were updated';
     }
 }
-
