@@ -20,8 +20,8 @@ $reader = new Csv(
 if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activo', 'PVP', 'Description', 'Short description', 'Title', 'Category', 'Family', 'SubFamily', 'Compatible products', 'imageURL', 'EAN', 'length', 'width', 'height', 'volume', 'weight', 'Product URL'])) {
     die($this->lastError = 'header is not fine');
 }
-$bydemes = new Bydemes();
 $data_file = $reader->read();
+$bydemes = new Bydemes($data_file);
 
 $result = $bydemes->processCsv();
 if (!$result) {

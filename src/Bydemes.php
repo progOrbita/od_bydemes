@@ -8,8 +8,15 @@ use Db;
 
 class Bydemes
 {
-    //get all products from Bydemes supplier
-
+    private $csv_data = [];
+    
+    /**
+     * constructor
+     */
+    function __construct(array $csv_data)
+    {
+        $this->csv_data = $csv_data;
+    }
     public function getBydemesProducts()
     {
         $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.reference, ma.name AS ma_name
