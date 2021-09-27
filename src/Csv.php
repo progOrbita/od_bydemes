@@ -77,7 +77,7 @@ class Csv extends ReadFiles
             $i++;
             array_push($data, array_combine($this->parse_header, $row));
         }
-        return $data; 
+        return $data;
         //if header is right but content in totally empty
         if (empty($data)) {
             $this->lastError = 'File data is empty';
