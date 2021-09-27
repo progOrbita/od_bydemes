@@ -45,41 +45,7 @@ class Bydemes
     public function getProcessTable()
     {
         $csv_processed = $this->processCsv();
-        $tableBase = '<head>
-            <style>
-                td {
-                    border: 1px solid black;
-                    padding: 4px;
-                }
-            </style>
-        </head><table>
-        <thead><th>Referencia</th><th>In database?</th><th>Changed values</th></thead>
-        <tbody>';
-        $tableBody = '';
-        foreach ($csv_processed as $key => $value) {
-            if ($value === false) {
-                $tableBody .= '<tr><td>' . $key . '</td><td>doesnt exist</td></tr>';
-            } else {
-                $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
-                //Shows differents values from the database
-                foreach ($value as $key2 => $value2) {
-                    $tableBody .= '<td>' . $key2 . ': ' . $value2 . '</td>';
-                }
-                $tableBody .= '</tr>';
-            }
-        }
-        $tableEnd = '</tbody></table>';
-
-        return $tableBase . $tableBody . $tableEnd;
-    }
-    /**
-     * Table with the save info
-     */
-    public function getSaveTable()
-    {
-        $csv_save = $this->saveCsv();
-        $tableBase = '
-        <head>
+        $tableBase = '<html><head>
             <style>
                 td {
                     border: 1px solid black;
@@ -87,60 +53,26 @@ class Bydemes
                 }
             </style>
         </head>
-        <table>
-        <thead>
-            <th>Reference</th>
-            <th>Manufacturer</th>
-            <th>Stock</th>
-            <th>Price</th>
-            <th>description</th>
-            <th>Short description</th>
-            <th>Name</th>
-            <th>Width</th>
-            <th>Height</th>
-            <th>Volume</th>
-            <th>Weight</th>
-        </thead>
+        <body>
+            <h2>Update products</h2>
+            <table>
+        <thead><th>Referencia</th><th>In database?</th><th>Changed values</th></thead>
         <tbody>';
         $tableBody = '';
-        $show_vals = ['reference', 'manufacturer_name', 'stock', 'price', 'description', 'description_short', 'name', 'width', 'height', 'depth', 'weight'];
-        foreach ($csv_save as $key => $value) {
-            $tableBody .= '<tr>';
+        foreach ($csv_processed as $key => $value) {
+            if ($value === false) {
+                continue;
+            }
+            $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
+            //Shows differents values from the database
             foreach ($value as $key2 => $value2) {
-
-                if (!in_array($key2, $show_vals)) {
-                    continue;
-                }
-                //$clean_val = trim(substr($value2,0,14));
-                if (empty($value2)) {
-                    $value2 = 0;
-                }
-                $tableBody .= '<td>' . $value2 . '</td>';
+                $tableBody .= '<td>' . $key2 . ' from : ' . $value2 . '</td>';
             }
             $tableBody .= '</tr>';
         }
-        $tableEnd = '</tbody></table>';
+        $tableEnd = '</tbody></table></body></html>';
 
         return $tableBase . $tableBody . $tableEnd;
-    }
-    /**
-     * checks if reference must be saved in the database
-     */
-    public function saveCsv()
-    {
-        //It saves an array with the references and their row values
-        $bydemes_products = $this->getBydemesProducts();
-        foreach ($this->csv_data as $csv_values) {
-            $csv_ref = $csv_values['reference'];
-
-            //if reference dont exist in the database
-            if (!array_key_exists($csv_ref, $bydemes_products)) {
-                //echo $csv_ref.' ni esta <br/>';
-                $refs_info[$csv_ref] = $csv_values;
-            }
-            $processedValues[$csv_ref] = 'no hace falta';
-        }
-        return $refs_info;
     }
     /**
      * Process the csv information, checking if fields exist or if they are different within the database
@@ -166,7 +98,6 @@ class Bydemes
                 $processedValues[$csv_ref] = false;
                 continue;
             }
-
 
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
