@@ -68,7 +68,10 @@ class Bydemes
                         $setQuery .= "sa.`quantity` = " . $value2 . ", ";
 
                         break;
+                    case 'price':
                         //for values from ps_product table
+                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ps." . $key2 . " = " . $value2 . ", ";
+                        break;
                     default:
 
                         $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ";
@@ -81,10 +84,10 @@ class Bydemes
             $query = "UPDATE `ps_product` p 
             INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
             INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
+            INNER JOIN `ps_product_shop` ps ON p.id_product = ps.id_product 
             INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
             INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier
             " . $cutSet . " WHERE `reference` = \"" . $ref . "\" AND id_lang = 1";
-
             $update[$ref] = Db::getInstance()->execute($query);
         }
         //return reference with true/false if query was done
