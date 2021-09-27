@@ -39,7 +39,7 @@ class Bydemes
         return $bydemes_product;
     }
     /**
-     * creates the table with the information
+     * creates the table with the information obtained from processing the csv information with the database
      * @return string html of the table
      */
     public function getProcessTable()
@@ -66,7 +66,7 @@ class Bydemes
             $tableBody .= '<tr><td>' . $key . '</td><td>exist</td>';
             //Shows differents values from the database
             foreach ($value as $key2 => $value2) {
-                $tableBody .= '<td>' . $key2 . ' from : ' . $value2 . '</td>';
+                $tableBody .= '<td>' . $key2 . ' ' . $value2 . '</td>';
             }
             $tableBody .= '</tr>';
         }
@@ -108,7 +108,11 @@ class Bydemes
                 }
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
-                    $processedValues[$csv_ref][$field] = trim($bydemes_products[$csv_ref][$field], '\0') . ' to ' . $formatedValues[$field];
+                    if (strlen($bydemes_products[$csv_ref][$field]) > 40) {
+                        $processedValues[$csv_ref][$field] = 'is changed '.substr($bydemes_products[$csv_ref][$field],0,100).' ...';
+                        continue;
+                    }
+                    $processedValues[$csv_ref][$field] = 'from : ' . trim($bydemes_products[$csv_ref][$field], '\0') . ' to ' . $formatedValues[$field];
                 }
             }
         }
@@ -132,9 +136,10 @@ class Bydemes
                 case 'length':
                 case 'height':
                 case 'depth':
+                case 'weight':
                     $csv_values[$header] = preg_replace('/[a-z]+/i', '', trim($row_value));
                     if (empty($row_value)) {
-                        $csv_values[$header] = 0;
+                        $csv_values[$header] = "0";
                     }
                     break;
                     //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
