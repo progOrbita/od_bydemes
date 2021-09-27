@@ -14,7 +14,7 @@ $reader = new Csv(
     'rates/CL131545_product_list.csv',
     ['id_product', 'reference', 'model', 'manufacturer_name', 'stock', 'active', 'price', 'description', 'description_short', 'name', 'category', 'family', 'subfamily', 'compatible_products', 'imageURL', 'EAN', 'length', 'width', 'height', 'depth', 'weight', 'product_url'],
     ',',
-    100
+    8000
 );
 
 if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activo', 'PVP', 'Description', 'Short description', 'Title', 'Category', 'Family', 'SubFamily', 'Compatible products', 'imageURL', 'EAN', 'length', 'width', 'height', 'volume', 'weight', 'Product URL'])) {
@@ -33,16 +33,14 @@ echo $result;
 if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
+
+    if ($date !== $currentDate) {
+        die('write today to update the values if something isnt up to today');
+    }
     $save = $bydemes->saveProducts();
-    
-    //no products to update
     if (empty($save)) {
         die('values from csv are already updated');
     }
-    if ($date !== $currentDate) {
-        die('write today to update the values');
-    }
-    
     foreach ($save as $key => $value) {
         if (!$value) {
             echo '<br/> Values from ' . $key . ' couldnt be updated';
