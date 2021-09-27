@@ -50,6 +50,7 @@ class Bydemes
                 td {
                     border: 1px solid black;
                     padding: 4px;
+                    min-width: 100px;
                 }
             </style>
         </head>
