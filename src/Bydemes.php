@@ -39,40 +39,54 @@ class Bydemes
         }
         return $bydemes_product;
     }
-    public function saveProducts()
+    /**
+     * Update the reference values from the csv into the database
+     * @return array $update, array with pairs of references/booleans if they were or no updated
+     */
+    public function saveProducts(): array
     {
-        //Tools::dieObject($this->changed_csv);
-        $setQuery = 'SET ';
-        foreach ($this->changed_csv as $key => $value) {
+        $update = [];
+        foreach ($this->changed_csv as $ref => $value) {
+            $setQuery = 'SET ';
+            //Some processing about what table the values need to be updated
             foreach ($value as $key2 => $value2) {
-                switch($key2){
+                switch ($key2) {
                     case 'manufacturer_name':
-                        $setQuery .= "ma.`name` = '".$value2."', ";
-                    break;
+
+                        $setQuery .= "ma.`name` = '" . $value2 . "', ";
+                        break;
+
                     case 'name':
                     case 'description':
                     case 'description_short':
-                        $setQuery .= "pl.`".$key2."` = '".$value2."', ";
-                    break;
+
+                        $setQuery .= "pl.`" . $key2 . "` = '" . $value2 . "', ";
+                        break;
+
                     case 'stock':
-                        $setQuery .= "sa.`available` = ".$value2.", ";
-                    break;
+
+                        $setQuery .= "sa.`quantity` = " . $value2 . ", ";
+
+                        break;
+                        //for values from ps_product table
                     default:
-                    $setQuery .= "p.`".$key2."` = ".$value2.", ";
-                    break;
+
+                        $setQuery .= "p.`" . $key2 . "` = " . $value2 . ", ";
+                        
+                        break;
                 }
             }
+            //remove the ", " at the end of the string
+            $cutSet = substr($setQuery, 0, -2);
+            $query = "UPDATE `ps_product` p 
+            INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
+            INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
+            INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
+            INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier
+            " . $cutSet . " WHERE `reference` = \"" . $ref . "\" AND id_lang = 1";
+
+            $update[$ref] = Db::getInstance()->execute($query);
         }
-        $t = substr($setQuery,0,-2);
-        //Teoria - coger los valores que han cambiado y hacer el update.
-        $query = "UPDATE `ps_product` p 
-        INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
-        INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
-        INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
-        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier
-        ".$t." WHERE `reference` = 'SAM-562' AND id_lang = 1";
-        //die('<textarea>'.$query.'</textarea>');
-        $update = Db::getInstance()->execute($query);
         return $update;
     }
     /**
