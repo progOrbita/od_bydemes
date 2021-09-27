@@ -137,9 +137,9 @@ class Bydemes
                         $csv_values[$header] = 0;
                     }
                     break;
-                    //replace if there's "" to only one. Then removes " at the beggining and the end if they exists.
+                    //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
                 case 'name':
-                    $inches = str_replace('""', '"', $row_value);
+                    $inches = trim(str_replace('""', '"', $row_value));
                     $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
                     break;
                     //database keeps <p> in the field
