@@ -80,22 +80,22 @@ class Bydemes
                         continue;
                     }
                     if ($field === 'active') {
-                        $field_value = 'false' ? $field_value = 0 : $field_value = 1;
+                        $field_value === 'false' ? $field_value = 0 : $field_value = 1;
                     }
                     $new_prod->$field = $field_value;
                 }
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
-                $new_prod->add();
-            }
-            $id_product = $ref_values['id_product'];
-            $object = new Product($id_product);
-            foreach ($ref_values as $field => $field_value) {
-                $object->$field = $field_value;
+            } else {
+                $id_product = $ref_values['id_product'];
+                $object = new Product($id_product);
+                foreach ($ref_values as $field => $field_value) {
+                    $object->$field = $field_value;
+                }
+                $save[$ref] = $object->update();
             }
 
             //All the values that are modified added onto the object then update
-            //$save[] = $object->update();
             $save[$ref] = $object->update();
         }
         //return reference with true/false if query was done
