@@ -17,6 +17,13 @@ class Bydemes
     function __construct(array $csv_data)
     {
         $this->csv_data = $csv_data;
+
+        //obtains all the brands from the database
+        $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
+        
+        foreach ($brands_query as $brand) {
+                $this->brands[$brand['id_manufacturer']] = $brand['name'];
+        }
     }
     /**
      * Query that obtains the products from bydemes supplier
