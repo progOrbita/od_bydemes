@@ -29,13 +29,12 @@ if (!$result) {
 }
 echo $result;
 
-
 if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
 
     if ($date !== $currentDate) {
-        die('write today to update the values if something isnt up to today');
+        die('write today to update or create the product');
     }
     $save = $bydemes->saveProducts();
     if (empty($save)) {

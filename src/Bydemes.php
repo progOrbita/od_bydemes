@@ -65,14 +65,14 @@ class Bydemes
             }
         }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-        $default_category = "2";
+        $default_category = "2"; // default category inicio
 
         //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
 
+            //If no id is found in database, add the product
             if (!isset($ref_values['id_product'])) {
 
-                //If no id was found in database, add the product
                 $new_prod = new Product();
                 foreach ($ref_values as $field => $field_value) {
                     //checking if property exist in the product
@@ -171,6 +171,7 @@ class Bydemes
                 $processedValues[$csv_ref] = false;
             }
             foreach ($csv_values as $field => $value) {
+                //if field doesnt exist in the database
                 if (!isset($bydemes_products[$csv_ref][$field])) {
                     if ($field === 'id_product') {
                         continue;
