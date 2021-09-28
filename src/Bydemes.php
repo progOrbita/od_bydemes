@@ -69,23 +69,23 @@ class Bydemes
 
         //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
-            
-            if(!isset($ref_values['id_product'])){
-                
+
+            if (!isset($ref_values['id_product'])) {
+
                 //If no id was found in database, add the product
                 $new_prod = new Product();
                 foreach ($ref_values as $field => $field_value) {
                     //checking if property exist in the product
-                    if(!property_exists($new_prod,$field)){
+                    if (!property_exists($new_prod, $field)) {
                         continue;
                     }
-                    if($field === 'active'){
+                    if ($field === 'active') {
                         $field_value = 'false' ? $field_value = 0 : $field_value = 1;
                     }
                     $new_prod->$field = $field_value;
                 }
                 $new_prod->id_supplier = $bydemes_id;
-                $new_prod->id_category_default = $default_category;           
+                $new_prod->id_category_default = $default_category;
                 $new_prod->add();
             }
             $id_product = $ref_values['id_product'];
@@ -93,7 +93,7 @@ class Bydemes
             foreach ($ref_values as $field => $field_value) {
                 $object->$field = $field_value;
             }
-            
+
             //All the values that are modified added onto the object then update
             //$save[] = $object->update();
             $save[$ref] = $object->update();
@@ -133,7 +133,7 @@ class Bydemes
             }
             $tableBody .= '<tr><td>' . $ref . '</td><td>exist</td>';
             //Shows wrong values beetwen database and csv
-            if(empty($value)){
+            if (empty($value)) {
                 $tableBody .= '<td>Product up to date</td>';
             }
             foreach ($value as $ref_header => $ref_value) {
@@ -183,6 +183,7 @@ class Bydemes
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
                     continue;
                 }
+
 
                 $processedValues[$csv_ref] = [];
                 //removes 0 from database fields. Store if values are different
