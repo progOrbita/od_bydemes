@@ -12,7 +12,7 @@ if (!defined('_PS_VERSION_')) {
 
 $reader = new Csv(
     'rates/CL131545_product_list.csv',
-    ['id_product', 'reference', 'model', 'manufacturer_name', 'stock', 'active', 'price', 'description', 'description_short', 'name', 'category', 'family', 'subfamily', 'compatible_products', 'imageURL', 'EAN', 'length', 'width', 'height', 'depth', 'weight', 'product_url'],
+    ['id_product', 'reference', 'model', 'manufacturer_name', 'quantity', 'active', 'price', 'description', 'description_short', 'name', 'category', 'family', 'subfamily', 'compatible_products', 'imageURL', 'EAN', 'length', 'width', 'height', 'depth', 'weight', 'product_url'],
     ',',
     10000
 );

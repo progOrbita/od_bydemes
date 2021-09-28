@@ -24,7 +24,7 @@ class Bydemes
      */
     private function getBydemesProducts()
     {
-        $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.weight, p.reference ,ma.name AS manufacturer_name, sa.quantity AS stock
+        $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.weight, p.reference ,ma.name AS manufacturer_name, sa.quantity
         FROM `ps_product` p 
         INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
         INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
