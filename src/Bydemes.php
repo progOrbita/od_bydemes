@@ -62,15 +62,16 @@ class Bydemes
 
         //adds prestashop id if reference exist in the array
         foreach ($bydemes_refs as $value) {
-            $id_refs[$value['id_product']] = $value['reference'];
+                if (array_key_exists($value['reference'],$this->changed_csv)) {
+                    $this->changed_csv[$value['reference']]['id_product'] = $value['id_product'];
+                }
         }
         //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
 
-            $id_ref = array_search($ref, $id_refs);
             //id, full, id_lang
-            $object = new Product($id_ref, true, 1);
-
+            $id_product = $ref_values['id_product'];
+            $object = new Product($id_product);
             foreach ($ref_values as $field => $field_value) {
                 $object->$field = $field_value;
             }
