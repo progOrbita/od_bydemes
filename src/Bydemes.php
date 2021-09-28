@@ -173,6 +173,10 @@ class Bydemes
             foreach ($csv_values as $field => $value) {
                 //if field doesnt exist in the database
                 if (!isset($bydemes_products[$csv_ref][$field])) {
+                    continue;
+                }
+                //For products in csv which aren't added in the database. Id isnt needed
+                if (!isset($bydemes_products[$csv_ref]['reference'])) {
                     if ($field === 'id_product') {
                         continue;
                     }
@@ -184,9 +188,8 @@ class Bydemes
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
                     continue;
                 }
-
-
-                $processedValues[$csv_ref] = [];
+                
+                
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
                     //Need to convert the name into an id to modify it in the database. Number need to be a string
