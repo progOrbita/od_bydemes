@@ -159,24 +159,31 @@ class Bydemes
         if (!$bydemes_products) {
             return false;
         }
+
         $processedValues = [];
 
         foreach ($this->csv_data as $csv_values) {
             $csv_ref = $csv_values['reference'];
 
-            //if reference dont exist in the database
-            if (!array_key_exists($csv_ref, $bydemes_products)) {
-                $processedValues[$csv_ref] = false;
-                continue;
-            }
-
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
-
+            if (!array_key_exists($csv_ref, $bydemes_products)) {
+                $processedValues[$csv_ref] = false;
+            }
             foreach ($csv_values as $field => $value) {
                 if (!isset($bydemes_products[$csv_ref][$field])) {
+                    if ($field === 'id_product') {
+                        continue;
+                    }
+                    if ($field === 'manufacturer_name') {
+                        $id_manufacturer = array_search($formatedValues[$field], $this->brands);
+                        $this->changed_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                        continue;
+                    }
+                    $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
                     continue;
                 }
+
                 $processedValues[$csv_ref] = [];
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
