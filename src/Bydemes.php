@@ -57,9 +57,10 @@ class Bydemes
         $save = [];
         $id_refs = [];
 
+        //obtains id => ref from all bydemes products. 
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
 
-        //obtains id => ref from all bydemes products
+        //adds prestashop id if reference exist in the array
         foreach ($bydemes_refs as $value) {
             $id_refs[$value['id_product']] = $value['reference'];
         }
@@ -159,7 +160,7 @@ class Bydemes
                 $processedValues[$csv_ref] = [];
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
-                    //Need to convert the name into an id to modify it in the database
+                    //Need to convert the name into an id to modify it in the database. Number need to be a string
                     if ($field === 'manufacturer_name') {
                         $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
                         $id_manufacturer = array_search($formatedValues[$field], $this->brands);
