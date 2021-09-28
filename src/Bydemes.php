@@ -55,26 +55,45 @@ class Bydemes
     public function saveProducts()
     {
         $save = [];
-        $id_refs = [];
-
         //obtains id => ref from all bydemes products. 
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
 
         //adds prestashop id if reference exist in the array
         foreach ($bydemes_refs as $value) {
-                if (array_key_exists($value['reference'],$this->changed_csv)) {
-                    $this->changed_csv[$value['reference']]['id_product'] = $value['id_product'];
-                }
+            if (array_key_exists($value['reference'], $this->changed_csv)) {
+                $this->changed_csv[$value['reference']]['id_product'] = $value['id_product'];
+            }
         }
+        $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
+        $default_category = "2";
+
         //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
-
-            //id, full, id_lang
+            
+            if(!isset($ref_values['id_product'])){
+                
+                //If no id was found in database, add the product
+                $new_prod = new Product();
+                foreach ($ref_values as $field => $field_value) {
+                    //checking if property exist in the product
+                    if(!property_exists($new_prod,$field)){
+                        continue;
+                    }
+                    if($field === 'active'){
+                        $field_value = 'false' ? $field_value = 0 : $field_value = 1;
+                    }
+                    $new_prod->$field = $field_value;
+                }
+                $new_prod->id_supplier = $bydemes_id;
+                $new_prod->id_category_default = $default_category;           
+                $new_prod->add();
+            }
             $id_product = $ref_values['id_product'];
             $object = new Product($id_product);
             foreach ($ref_values as $field => $field_value) {
                 $object->$field = $field_value;
             }
+            
             //All the values that are modified added onto the object then update
             //$save[] = $object->update();
             $save[$ref] = $object->update();
