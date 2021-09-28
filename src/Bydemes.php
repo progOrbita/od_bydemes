@@ -23,7 +23,7 @@ class Bydemes
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
 
         foreach ($brands_query as $brand) {
-                $this->brands[$brand['id_manufacturer']] = $brand['name'];
+            $this->brands[$brand['id_manufacturer']] = $brand['name'];
         }
     }
     /**
