@@ -102,15 +102,19 @@ class Bydemes
         <body>
             <h2>Update products</h2>
             <table>
-        <thead><th>Reference</th><th>In database?</th><th>Changed values</th></thead>
+        <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
         $tableBody = '';
         foreach ($csv_processed as $ref => $value) {
             if ($value === false) {
+                $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
                 continue;
             }
             $tableBody .= '<tr><td>' . $ref . '</td><td>exist</td>';
             //Shows wrong values beetwen database and csv
+            if(empty($value)){
+                $tableBody .= '<td>Product up to date</td>';
+            }
             foreach ($value as $ref_header => $ref_value) {
                 $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
             }
@@ -152,6 +156,7 @@ class Bydemes
                 if (!isset($bydemes_products[$csv_ref][$field])) {
                     continue;
                 }
+                $processedValues[$csv_ref] = [];
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
                     //Need to convert the name into an id to modify it in the database
