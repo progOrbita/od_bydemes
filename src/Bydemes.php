@@ -21,7 +21,7 @@ class Bydemes
 
         //obtains all the brands from the database
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
-        
+
         foreach ($brands_query as $brand) {
                 $this->brands[$brand['id_manufacturer']] = $brand['name'];
         }
@@ -56,26 +56,29 @@ class Bydemes
     {
         $save = [];
         $id_refs = [];
-        
+
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
+
         //obtains id => ref from all bydemes products
         foreach ($bydemes_refs as $value) {
-                $id_refs[$value['id_product']] = $value['reference'];
+            $id_refs[$value['id_product']] = $value['reference'];
         }
         //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
-            $id_ref = array_search($ref,$id_refs);
-            
+
+            $id_ref = array_search($ref, $id_refs);
             //id, full, id_lang
-            $object = new Product($id_ref,true,1);
+            $object = new Product($id_ref, true, 1);
+
             foreach ($ref_values as $field => $field_value) {
                 $object->$field = $field_value;
             }
             //All the values that are modified added onto the object then update
             //$save[] = $object->update();
+            $save[$ref] = $object->update();
         }
         //return reference with true/false if query was done
-        return $update;
+        return $save;
     }
     /**
      * creates the table with the information obtained from processing the csv information within the database
