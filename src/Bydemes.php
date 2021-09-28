@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OrbitaDigital\OdBydemes;
 
 use Db;
+use Product;
 
 class Bydemes
 {
@@ -51,54 +52,27 @@ class Bydemes
      * Update the reference values from the csv into the database
      * @return array $update, array with pairs of references/booleans if they were or no updated
      */
-    public function saveProducts(): array
+    public function saveProducts()
     {
-        $update = [];
+        $save = [];
+        $id_refs = [];
+        
+        $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
+        //obtains id => ref from all bydemes products
+        foreach ($bydemes_refs as $value) {
+                $id_refs[$value['id_product']] = $value['reference'];
+        }
+        //changed_csv is ref as key with the array of values changed
         foreach ($this->changed_csv as $ref => $ref_values) {
-            $setQuery = 'SET ';
-            //Some processing about what table the values need to be updated
+            $id_ref = array_search($ref,$id_refs);
+            
+            //id, full, id_lang
+            $object = new Product($id_ref,true,1);
             foreach ($ref_values as $field => $field_value) {
-                switch ($field) {
-                    case 'manufacturer_name':
-                        $brand = array_search($field_value, $this->brands);
-                        $setQuery .= "p.`id_manufacturer` = " . $brand . ", ";
-                        break;
-
-                    case 'name':
-                    case 'description':
-                    case 'description_short':
-
-                        $setQuery .= "pl.`" . $field . "` = '" . $field_value . "', ";
-                        break;
-
-                    case 'stock':
-
-                        $setQuery .= "sa.`quantity` = " . $field_value . ", ";
-
-                        break;
-                    case 'price':
-
-                        $setQuery .= "p.`" . $field . "` = " . $field_value . ", ps." . $field . " = " . $field_value . ", ";
-
-                        break;
-
-                    default:
-                        //for values from ps_product table
-                        $setQuery .= "p.`" . $field . "` = " . $field_value . ", ";
-
-                        break;
-                }
+                $object->$field = $field_value;
             }
-            //remove the ", " at the end of the string
-            $cutSet = substr($setQuery, 0, -2);
-            $query = "UPDATE `ps_product` p 
-            INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
-            INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
-            INNER JOIN `ps_product_shop` ps ON p.id_product = ps.id_product 
-            INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
-            INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier
-            " . $cutSet . " WHERE `reference` = \"" . $ref . "\" AND id_lang = 1";
-            $update[$ref] = Db::getInstance()->execute($query);
+            //All the values that are modified added onto the object then update
+            //$save[] = $object->update();
         }
         //return reference with true/false if query was done
         return $update;
