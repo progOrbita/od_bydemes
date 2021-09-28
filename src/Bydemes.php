@@ -11,7 +11,7 @@ class Bydemes
 {
     private $csv_data = [];
     private $changed_csv = [];
-    private $brands = [3 => 'Airspace', 4 => 'Nittan', 5 => 'Crow'];
+    private $brands = [];
     /**
      * constructor
      */
@@ -158,7 +158,7 @@ class Bydemes
                     if ($field === 'manufacturer_name') {
                         $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
                         $id_manufacturer = array_search($formatedValues[$field], $this->brands);
-                        $this->changed_csv[$csv_ref]['id_manufacturer'] = $id_manufacturer;
+                        $this->changed_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                         continue;
                     }
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
