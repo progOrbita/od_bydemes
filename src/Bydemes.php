@@ -154,6 +154,13 @@ class Bydemes
                 }
                 //removes 0 from database fields. Store if values are different
                 if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
+                    //Need to convert the name into an id to modify it in the database
+                    if ($field === 'manufacturer_name') {
+                        $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
+                        $id_manufacturer = array_search($formatedValues[$field], $this->brands);
+                        $this->changed_csv[$csv_ref]['id_manufacturer'] = $id_manufacturer;
+                        continue;
+                    }
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
                     if (strlen($bydemes_products[$csv_ref][$field]) > 40) {
                         $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref][$field], 0, 100) . ' ...</b>';
