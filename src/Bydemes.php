@@ -222,6 +222,12 @@ class Bydemes
                 case 'price':
                     $csv_values[$header] = str_replace(",", ".", $row_value);
                     break;
+
+                    //csv active is false (if 0). Need to convert it
+                case 'active':
+                    $row_value === 'False' ? $csv_values[$header] = "0" : $csv_values[$header] = "1";
+                    break;
+
                     //For dimensions, changes letters to 0 (after removing lots of empty space)
                 case 'width':
                 case 'length':
