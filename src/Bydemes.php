@@ -165,14 +165,10 @@ class Bydemes
             $csv_ref = $csv_values['reference'];
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
-
-            //To shows in the table the product dont exist
-            if (!array_key_exists($csv_ref, $bydemes_products)) {
-                $processedValues[$csv_ref] = false;
-            }
-
+            
             //For products without reference (in database), no comparation is needed
             if (!isset($bydemes_products[$formatedValues['reference']])) {
+                $processedValues[$csv_ref] = false;
                 foreach ($csv_values as $field => $value) {
                     if ($field === 'id_product') {
                         continue;
