@@ -57,7 +57,6 @@ class Bydemes
         $save = [];
         //obtains id => ref from all bydemes products. 
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
-
         //adds prestashop id if reference exist in the array
         foreach ($bydemes_refs as $value) {
             if (array_key_exists($value['reference'], $this->changed_csv)) {
@@ -151,6 +150,10 @@ class Bydemes
      */
     private function processCsv()
     {
+        /**
+         * Process the csv information, checking if fields exist or if they are different within the database
+         * @return bool|array false if there's an error in the query. Array with the processed information
+         */
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
@@ -159,24 +162,22 @@ class Bydemes
         if (!$bydemes_products) {
             return false;
         }
-
         $processedValues = [];
 
         foreach ($this->csv_data as $csv_values) {
+            //obtain product reference
             $csv_ref = $csv_values['reference'];
-
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
+
+            //To shows in the table the product dont exist
             if (!array_key_exists($csv_ref, $bydemes_products)) {
                 $processedValues[$csv_ref] = false;
             }
-            foreach ($csv_values as $field => $value) {
-                //if field doesnt exist in the database
-                if (!isset($bydemes_products[$csv_ref][$field])) {
-                    continue;
-                }
-                //For products in csv which aren't added in the database. Id isnt needed
-                if (!isset($bydemes_products[$csv_ref]['reference'])) {
+
+            //For products without reference (in database), no comparation is needed
+            if (!isset($bydemes_products[$formatedValues['reference']])) {
+                foreach ($csv_values as $field => $value) {
                     if ($field === 'id_product') {
                         continue;
                     }
@@ -186,25 +187,34 @@ class Bydemes
                         continue;
                     }
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
-                    continue;
+
                 }
-                
-                
-                //removes 0 from database fields. Store if values are different
-                if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
-                    //Need to convert the name into an id to modify it in the database. Number need to be a string
-                    if ($field === 'manufacturer_name') {
+            } else {
+                //Product already inserted
+                foreach ($csv_values as $field => $value) {
+                    
+                    //If field dont exist in database skip it
+                    if (!isset($bydemes_products[$csv_ref][$field])) {
+                        continue;
+                    }
+                    $processedValues[$csv_ref] = [];
+                    //removes 0 from database fields. Store if values are different
+                    if (trim($bydemes_products[$csv_ref][$field]) != $formatedValues[$field]) {
+                        //Need to convert the name into an id to modify it in the database. Number need to be a string
+
+                        if ($field === 'manufacturer_name') {
+                            $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
+                            $id_manufacturer = array_search($formatedValues[$field], $this->brands);
+                            $this->changed_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                            continue;
+                        }
+                        $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
+                        if (strlen($bydemes_products[$csv_ref][$field]) > 40) {
+                            $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref][$field], 0, 100) . ' ...</b>';
+                            continue;
+                        }
                         $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
-                        $id_manufacturer = array_search($formatedValues[$field], $this->brands);
-                        $this->changed_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
-                        continue;
                     }
-                    $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
-                    if (strlen($bydemes_products[$csv_ref][$field]) > 40) {
-                        $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref][$field], 0, 100) . ' ...</b>';
-                        continue;
-                    }
-                    $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref][$field], '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
                 }
             }
         }
