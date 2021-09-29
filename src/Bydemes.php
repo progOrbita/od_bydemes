@@ -74,9 +74,6 @@ class Bydemes
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
-                    if ($field === 'active') {
-                        $field_value === 'false' ? $field_value = "0" : $field_value = "1";
-                    }
                     $new_prod->$field = $field_value;
                 }
                 $new_prod->supplier_name = 'bydemes';

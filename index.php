@@ -28,13 +28,13 @@ if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
 
-    if ($date !== $currentDate) {
-        echo('write today to update or create the product');
+    echo('<p>write today to update or create the product</p>');
+    if ($date === $currentDate) {
+        $save = $bydemes->saveProducts();
     }
-    $save = $bydemes->saveProducts();
 }
-$result = $bydemes->getProcessTable($process_csv);
+$result = $bydemes->getTable();
 if (!$result) {
-    die('query couldnt be done');
+    die('<p>query couldnt be done</p>');
 }
 echo $result;
