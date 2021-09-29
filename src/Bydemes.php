@@ -252,11 +252,19 @@ class Bydemes
                     //Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
                     //It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
                 case 'description':
-                    $desc_clean = trim($row_value);
-                    stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
-                    $csv_values[$header] = html_entity_decode($desc_encoded, ENT_NOQUOTES, 'UTF-8');
+                    $csv_values[$header] = $this->process_desc($row_value);
             }
         }
         return $csv_values;
+    }
+    /**
+     * post-processing description
+     */
+    private function process_desc($row_value){
+        $desc_clean = trim($row_value);
+        stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
+        //format <br> to <br />
+        $desc_processed = str_replace('<br>','<br />',$desc_encoded);
+        return html_entity_decode($desc_processed, ENT_NOQUOTES, 'UTF-8');
     }
 }
