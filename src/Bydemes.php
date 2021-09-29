@@ -76,12 +76,15 @@ class Bydemes
                         continue;
                     }
                     if ($field === 'active') {
-                        $field_value === 'false' ? $field_value = 0 : $field_value = 1;
+                        $field_value === 'false' ? $field_value = "0" : $field_value = "1";
                     }
                     $new_prod->$field = $field_value;
                 }
+                $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
+                $save[$ref] = $new_prod->add();
+                $new_prod->addSupplierReference($bydemes_id, 0);
             } else {
                 $id_product = $ref_values['id_product'];
                 $object = new Product($id_product);
