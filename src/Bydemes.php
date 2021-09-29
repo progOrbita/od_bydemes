@@ -10,7 +10,7 @@ use Product;
 class Bydemes
 {
     private $csv_data = [];
-    private $changed_csv = [];
+    private $insert_csv = [];
     private $brands = [];
     /**
      * constructor
@@ -56,15 +56,15 @@ class Bydemes
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
         //adds prestashop id if reference exist in the array
         foreach ($bydemes_refs as $value) {
-            if (array_key_exists($value['reference'], $this->changed_csv)) {
-                $this->changed_csv[$value['reference']]['id_product'] = $value['id_product'];
+            if (array_key_exists($value['reference'], $this->insert_csv)) {
+                $this->insert_csv[$value['reference']]['id_product'] = $value['id_product'];
             }
         }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "2"; // default category inicio
 
-        //changed_csv is ref as key with the array of values changed
-        foreach ($this->changed_csv as $ref => $ref_values) {
+        //insert_csv is ref as key with the array of values changed
+        foreach ($this->insert_csv as $ref => $ref_values) {
 
             //If no id is found in database, add the product
             if (!isset($ref_values['id_product'])) {
@@ -174,10 +174,10 @@ class Bydemes
 
                     if ($field === 'manufacturer_name') {
                         $id_manufacturer = array_search($formatedValues[$field], $this->brands);
-                        $this->changed_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                        $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                         continue;
                     }
-                    $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
+                    $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
                 }
             } else {
 
@@ -197,7 +197,7 @@ class Bydemes
 
                     if (trim($bydemes_products[$csv_ref]->$field) != $formatedValues[$field]) {
 
-                        $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
+                        $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
                         if (strlen($bydemes_products[$csv_ref]->$field) > 40) {
                             $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref]->$field, 0, 255) . ' ...</b>';
                             continue;
