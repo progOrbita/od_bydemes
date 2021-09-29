@@ -6,12 +6,12 @@ namespace OrbitaDigital\OdBydemes;
 
 use Db;
 use Product;
-
 class Bydemes
 {
     private $csv_data = [];
     private $insert_csv = [];
     private $brands = [];
+    private $tableData = [];
     /**
      * constructor
      */
@@ -51,7 +51,6 @@ class Bydemes
      */
     public function saveProducts()
     {
-        $save = [];
         //obtains id => ref from all bydemes products. 
         $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
         //adds prestashop id if reference exist in the array
@@ -148,7 +147,7 @@ class Bydemes
      * Process the csv information, checking if fields exist or if they are different within the database
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
-    private function processCsv()
+    public function processCsv()
     {
 
         //Data = array with the references
@@ -158,7 +157,7 @@ class Bydemes
         if (!$bydemes_products) {
             return false;
         }
-        $processedValues = [];
+        $this->tableData = [];
 
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
@@ -169,7 +168,7 @@ class Bydemes
             //For products without reference (in database), no comparation is needed
             //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
             if (!isset($bydemes_products[$formatedValues['reference']])) {
-                $processedValues[$csv_ref] = false;
+                $this->tableData[$csv_ref] = false;
                 foreach ($csv_values as $field => $value) {
 
                     if ($field === 'manufacturer_name') {
@@ -183,7 +182,7 @@ class Bydemes
 
                 //For products already inserted
 
-                $processedValues[$csv_ref] = [];
+                $this->tableData[$csv_ref] = [];
                 foreach ($csv_values as $field => $value) {
                     //If field in csv dont exist in database skip it (id_csv, image URL and so)
                     if (!property_exists($bydemes_products[$csv_ref], $field)) {
@@ -199,16 +198,16 @@ class Bydemes
 
                         $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
                         if (strlen($bydemes_products[$csv_ref]->$field) > 40) {
-                            $processedValues[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref]->$field, 0, 255) . ' ...</b>';
+                            $this->tableData[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref]->$field, 0, 255) . ' ...</b>';
                             continue;
                         }
-                        $processedValues[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref]->$field, '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
+                        $this->tableData[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref]->$field, '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
                     }
                 }
             }
         }
 
-        return $processedValues;
+        return $this->tableData;
     }
     /**
      * Format the Csv values so they can be compared with the values on the database.
