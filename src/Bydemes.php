@@ -27,26 +27,22 @@ class Bydemes
         }
     }
     /**
-     * Query that obtains the products from bydemes supplier
      * @return bool|array false if query have an error, array obtained from the query
+     * Obtains the database products based on the reference
      */
     private function getBydemesProducts()
     {
-        $query = Db::getInstance()->executeS('SELECT p.reference, pl.description, pl.description_short, pl.name, p.price, p.width, p.height, p.depth, p.weight, p.reference ,ma.name AS manufacturer_name, sa.quantity
-        FROM `ps_product` p 
-        INNER JOIN `ps_stock_available` sa ON p.id_product = sa.id_product
-        INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
-        INNER JOIN `ps_manufacturer` ma ON p.id_manufacturer = ma.id_manufacturer
-        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
-        if ($query === false) {
-            return false;
-        }
-        foreach ($query as $value) {
-            foreach ($value as $key2 => $value2) {
-                $bydemes_product[$value['reference']][$key2] = $value2;
+        $bydemes_products = [];
+        $ref_values = array_column($this->csv_data,'reference');
+
+        foreach ($ref_values as $value) {
+            //Obtains products which reference exist on Prestashop
+            $id = Product::getIdByReference($value);
+            if ($id) {
+                $bydemes_products[$value] = new Product($id,false,1);
             }
         }
-        return $bydemes_product;
+        return $bydemes_products;
     }
     /**
      * Update the reference values from the csv into the database
