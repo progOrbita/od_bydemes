@@ -88,11 +88,9 @@ class Bydemes
                 foreach ($ref_values as $field => $field_value) {
                     $object->$field = $field_value;
                 }
+                //All the values that are modified added onto the object then update
                 $save[$ref] = $object->update();
             }
-
-            //All the values that are modified added onto the object then update
-            $save[$ref] = $object->update();
         }
         //return reference with true/false if query was done
         return $save;
@@ -138,7 +136,6 @@ class Bydemes
             $tableBody .= '</tr>';
         }
         $tableEnd = '</tbody></table></body></html>';
-
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
@@ -147,10 +144,6 @@ class Bydemes
      */
     private function processCsv()
     {
-        /**
-         * Process the csv information, checking if fields exist or if they are different within the database
-         * @return bool|array false if there's an error in the query. Array with the processed information
-         */
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
@@ -166,8 +159,9 @@ class Bydemes
             $csv_ref = $csv_values['reference'];
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
-            
+
             //For products without reference (in database), no comparation is needed
+            //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
             if (!isset($bydemes_products[$formatedValues['reference']])) {
                 $processedValues[$csv_ref] = false;
                 foreach ($csv_values as $field => $value) {
@@ -180,9 +174,9 @@ class Bydemes
                     $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
                 }
             } else {
-                
+
                 //For products already inserted
-                
+
                 $processedValues[$csv_ref] = [];
                 foreach ($csv_values as $field => $value) {
                     //If field in csv dont exist in database skip it (id_csv, image URL and so)
@@ -194,6 +188,7 @@ class Bydemes
                         //TODO remade for the product, manufacturer name is null in database, from id obtain name and then compare or so
                         continue;
                     }
+
                     if (trim($bydemes_products[$csv_ref]->$field) != $formatedValues[$field]) {
 
                         $this->changed_csv[$csv_ref][$field] = $formatedValues[$field];
@@ -206,7 +201,7 @@ class Bydemes
                 }
             }
         }
-        
+
         return $processedValues;
     }
     /**
@@ -253,7 +248,6 @@ class Bydemes
                 case 'description':
                     $desc_clean = trim($row_value);
                     stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
-
                     $csv_values[$header] = html_entity_decode($desc_encoded, ENT_NOQUOTES, 'UTF-8');
             }
         }

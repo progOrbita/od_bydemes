@@ -28,7 +28,6 @@ if (!$result) {
     die('query couldnt be done');
 }
 echo $result;
-
 if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
@@ -42,9 +41,9 @@ if (isset($_GET['write'])) {
     }
     foreach ($save as $save_ref => $value) {
         if (!$value) {
-            echo '<br/> Values from ' . $save_ref . ' couldnt be updated';
+            echo '<br/>Product with reference <b>' . $save_ref . '</b> couldnt be updated';
             continue;
         }
-        echo '<br/>Values from reference ' . $save_ref . ' were updated';
+        echo '<br/>Product with reference <b>' . $save_ref . '</b> was updated';
     }
 }
