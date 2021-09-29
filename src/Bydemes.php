@@ -82,8 +82,10 @@ class Bydemes
                 $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
-                $save[$ref] = $new_prod->add();
+                $add = $new_prod->add();
+                if($add){
                     $this->tableData[$ref]['add info: '] = 'product was added';
+                }
                 $new_prod->addSupplierReference($bydemes_id, 0);
             } else {
                 $id_product = $ref_values['id_product'];
@@ -92,12 +94,13 @@ class Bydemes
                     $object->$field = $field_value;
                 }
                 //All the values that are modified added onto the object then update
-                $save[$ref] = $object->update();
+                $save = $object->update();
                 $this->tableData[$ref]['update info: '] = 'product was modified';
             }
-        }
+        } 
+
         //return reference with true/false if query was done
-        return $save;
+        return true;
     }
     /**
      * creates the table with the information obtained from processing the csv information within the database
@@ -105,10 +108,7 @@ class Bydemes
      */
     public function getProcessTable()
     {
-        $csv_processed = $this->processCsv();
-        if (!$csv_processed) {
-            return false;
-        }
+        
         $tableBase = '<html><head>
             <style>
                 td {
@@ -123,6 +123,10 @@ class Bydemes
             <table>
         <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
+        
+        if(!empty($this->save_info)){
+            
+        }
         $tableBody = '';
         foreach ($this->tableData as $ref => $value) {
             if ($value === false) {
