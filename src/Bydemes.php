@@ -84,6 +84,7 @@ class Bydemes
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
                 $save[$ref] = $new_prod->add();
+                    $this->tableData[$ref]['add info: '] = 'product was added';
                 $new_prod->addSupplierReference($bydemes_id, 0);
             } else {
                 $id_product = $ref_values['id_product'];
@@ -93,6 +94,7 @@ class Bydemes
                 }
                 //All the values that are modified added onto the object then update
                 $save[$ref] = $object->update();
+                $this->tableData[$ref]['update info: '] = 'product was modified';
             }
         }
         //return reference with true/false if query was done
@@ -123,7 +125,7 @@ class Bydemes
         <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
         $tableBody = '';
-        foreach ($csv_processed as $ref => $value) {
+        foreach ($this->tableData as $ref => $value) {
             if ($value === false) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
                 continue;
@@ -136,6 +138,7 @@ class Bydemes
             foreach ($value as $ref_header => $ref_value) {
                 $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
             }
+            
             $tableBody .= '</tr>';
         }
         $tableEnd = '</tbody></table></body></html>';

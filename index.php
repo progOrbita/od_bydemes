@@ -23,27 +23,17 @@ if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activ
 $data_file = $reader->read();
 $bydemes = new Bydemes($data_file);
 
-$result = $bydemes->getProcessTable();
-if (!$result) {
-    die('query couldnt be done');
-}
-echo $result;
 if (isset($_GET['write'])) {
     $date = $_GET['write'];
     $currentDate = date('d_m_Y');
 
     if ($date !== $currentDate) {
-        die('write today to update or create the product');
+        echo('write today to update or create the product');
     }
     $save = $bydemes->saveProducts();
-    if (empty($save)) {
-        die('values from csv are already updated');
-    }
-    foreach ($save as $save_ref => $value) {
-        if (!$value) {
-            echo '<br/>Product with reference <b>' . $save_ref . '</b> couldnt be updated';
-            continue;
-        }
-        echo '<br/>Product with reference <b>' . $save_ref . '</b> was updated';
-    }
 }
+$result = $bydemes->getProcessTable($process_csv);
+if (!$result) {
+    die('query couldnt be done');
+}
+echo $result;
