@@ -27,19 +27,18 @@ class Bydemes
         }
     }
     /**
-     * @return bool|array false if query have an error, array obtained from the query
      * Obtains the database products based on the reference
      */
     private function getBydemesProducts()
     {
         $bydemes_products = [];
-        $ref_values = array_column($this->csv_data,'reference');
+        $ref_values = array_column($this->csv_data, 'reference');
 
         foreach ($ref_values as $value) {
             //Obtains products which reference exist on Prestashop
             $id = Product::getIdByReference($value);
             if ($id) {
-                $bydemes_products[$value] = new Product($id,false,1);
+                $bydemes_products[$value] = new Product($id, false, 1);
             }
         }
         return $bydemes_products;
