@@ -28,9 +28,11 @@ class Bydemes
     }
     /**
      * Obtains the database products based on the reference
+     * @return array array with the references
      */
     private function getBydemesProducts()
     {
+        $id_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `language_code` = "es" ');
         $bydemes_products = [];
         $ref_values = array_column($this->csv_data, 'reference');
 
@@ -38,7 +40,7 @@ class Bydemes
             //Obtains products which reference exist on Prestashop
             $id = Product::getIdByReference($value);
             if ($id) {
-                $bydemes_products[$value] = new Product($id, false, 1);
+                $bydemes_products[$value] = new Product($id, false, $id_es);
             }
         }
         return $bydemes_products;
