@@ -186,9 +186,9 @@ class Bydemes
                     if (!property_exists($bydemes_products[$csv_ref], $field)) {
                         continue;
                     }
-                    
-                    if ($field === 'manufacturer_name') {
                         //TODO remade for the product, manufacturer name is null in database, from id obtain name and then compare or so
+
+                    if ($field === 'manufacturer_name' || $field === 'category') {
                         continue;
                     }
 
