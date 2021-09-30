@@ -96,20 +96,30 @@ class Bydemes
                     }
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                         if ($object->$field[1] !== $field_value) {
-                            $this->tableData[$ref][$field] = substr($field_value,0,200);
+                            $this->tableData[$ref][$field] = 'changed: ' . substr($field_value, 0, 200) . ' ...';
+                            $object->$field = $field_value;
                         }
                         continue;
                     }
                     if ($object->$field !== $field_value) {
-                        $this->tableData[$ref][$field] = $field_value;
+                        $object->$field = $field_value;
+                        $this->tableData[$ref][$field] = 'changed: ' . $field_value;
                     }
                 }
                 $save[] = $object;
 
                 //All the values that are modified added onto the object then update
-                $save = $object->update();
-
-                $this->tableData[$ref]['update info: '] = 'product was modified';
+                if (isset($_GET['write'])) {
+                    $date = $_GET['write'];
+                    $currentDate = date('d_m_Y');
+                    if ($date === $currentDate) {
+                        if(count($this->tableData[$ref]) > 0){
+                        $object->update();
+                        //Add new info in the table
+                        $this->tableData[$ref]['update info: '] = 'product was modified';
+                        }
+                    }
+                }
             }
         }
         //return reference with true/false if query was done
