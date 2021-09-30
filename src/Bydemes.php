@@ -217,9 +217,14 @@ class Bydemes
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                     if (empty($id_manufacturer)) {
-                        $this->tableData[$csv_ref]['brand'] = '<b>'.$value . '</b> not found';
+                        $this->tableData[$csv_ref]['<b>brand'] = $value . ' not found</b>';
                     }
                     continue;
+                }
+                if($field === 'price'){  
+                    if($formatedValues[$field] == '0.000000'){
+                        $this->tableData[$csv_ref]['<b>price'] = ' is emtpy</b>';  
+                    }
                 }
                 $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
             }
