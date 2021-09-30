@@ -23,8 +23,10 @@ if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activ
 $data_file = $reader->read();
 $bydemes = new Bydemes($data_file);
 $process_csv = $bydemes->processCsv();
-$bydemes->saveProducts();
-
+$save = $bydemes->saveProducts();
+if($save==false){
+    die('<h3>Error obtaining the data</h3>');
+}
 $result = $bydemes->getTable();
 if (!$result) {
     die('<p>query couldnt be done</p>');

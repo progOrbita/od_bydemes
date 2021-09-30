@@ -23,6 +23,7 @@ class Bydemes
     private $stock_values = ['Low' => 5, 'Medium' => 50, 'High' => 100];
     /**
      * constructor
+     * @param array $csv_data data obtained from reading the csv
      */
     function __construct(array $csv_data)
     {
@@ -57,6 +58,7 @@ class Bydemes
     }
     /**
      * Add products in the database if references doesnt exist or update them with new values from the csv
+     * @return bool false if there's an error in a query
      */
     public function saveProducts()
     {
@@ -165,26 +167,29 @@ class Bydemes
         }
         $tableBody = '';
         foreach ($this->tableData as $ref => $value) {
+            /**
+             * False - product isnt added
+             * emtpy - Product doesnt have changes
+             * no empty - Product have additional information
+             */
             if ($value === false) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
                 continue;
             }
             $tableBody .= '<tr><td>' . $ref . '</td><td>exist</td>';
-            //Shows wrong values beetwen database and csv
             if (empty($value)) {
                 $tableBody .= '<td>Product up to date</td>';
             }
             foreach ($value as $ref_header => $ref_value) {
                 $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
             }
-
             $tableBody .= '</tr>';
         }
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
-     * Process the csv information, checking if fields exist or if they are different within the database
+     * Process the csv information, cformating the fields so they can be inserted or updated into the database
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
     public function processCsv()
@@ -193,7 +198,6 @@ class Bydemes
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
 
-        //TODO que pasa si la marca no existe (id_manufacturer) al introducir el producto
         if (!$this->bydemes_products) {
             return false;
         }
@@ -209,7 +213,6 @@ class Bydemes
              * emtpy - Product doesnt have changes
              * no empty - Product have changes
              */
-            //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
             if (!isset($this->bydemes_products[$csv_ref])) {
                 $this->tableData[$csv_ref] = false;
             } else {
@@ -217,6 +220,9 @@ class Bydemes
                 $this->tableData[$csv_ref] = [];
             }
             foreach ($csv_values as $field => $value) {
+                /**
+                 * Attemps to find the brand/manufacturer, if not found it will throw a message
+                 */
                 if ($field === 'manufacturer_name') {
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
