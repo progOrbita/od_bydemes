@@ -34,6 +34,7 @@ class Bydemes
         foreach ($brands_query as $brand) {
             $this->brands[$brand['name']] = $brand['id_manufacturer'];
         }
+        $this->bydemes_products = $this->getBydemesProducts();
     }
     /**
      * Try to obtains the products in the database with reference - id_product
@@ -59,8 +60,8 @@ class Bydemes
      */
     public function saveProducts()
     {
+        $products = $this->bydemes_products;
 
-        $products = $this->getBydemesProducts();
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "2"; // default category inicio
 
@@ -185,8 +186,9 @@ class Bydemes
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
-        $bydemes_products = $this->getBydemesProducts();
-        if (!$bydemes_products) {
+
+        //TODO que pasa si la marca no existe (id_manufacturer) al introducir el producto
+        if (!$this->bydemes_products) {
             return false;
         }
 
@@ -202,7 +204,7 @@ class Bydemes
              * no empty - Product have changes
              */
             //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
-            if (!isset($bydemes_products[$csv_ref])) {
+            if (!isset($this->bydemes_products[$csv_ref])) {
                 $this->tableData[$csv_ref] = false;
             } else {
                 //For products already inserted
@@ -212,6 +214,9 @@ class Bydemes
                 if ($field === 'manufacturer_name') {
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                    if (empty($id_manufacturer)) {
+                        $this->tableData[$csv_ref][$field] = $value . ' not found';
+                    }
                     continue;
                 }
                 $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
