@@ -97,7 +97,7 @@ class Csv extends ReadFiles
      * @param array $filesData array to extract information
      * @return bool|array false if there's an error, otherwise an array with the joined information
      */
-    public function process(array $filesData)
+    protected function process(array $filesData)
     {
         //If there is no files at all
         if (empty($filesData)) {
