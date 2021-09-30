@@ -198,9 +198,10 @@ class Bydemes
     {
         foreach ($csv_values as $header => $row_value) {
             switch ($header) {
-                    //replace needed because numbers use . not ,
+                    //replace needed because numbers use . not ,. cast and decimals to be compared with the database
                 case 'price':
-                    $csv_values[$header] = str_replace(",", ".", $row_value);
+                    $float = (float) str_replace(",", ".", $row_value);
+                    $csv_values[$header] = number_format($float,6);
                     break;
 
                     //csv active is false (if 0). Need to convert it
@@ -214,9 +215,10 @@ class Bydemes
                 case 'height':
                 case 'depth':
                 case 'weight':
-                    $csv_values[$header] = preg_replace('/[a-z]+/i', '', trim($row_value));
+                    $float = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
+                    $csv_values[$header] = number_format($float,6);
                     if (empty($row_value)) {
-                        $csv_values[$header] = "0";
+                        $csv_values[$header] = "0.000000";
                     }
                     break;
                     //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
