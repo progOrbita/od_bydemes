@@ -23,7 +23,7 @@ if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activ
 $data_file = $reader->read();
 $bydemes = new Bydemes($data_file);
 $process_csv = $bydemes->processCsv();
-$save = $bydemes->saveProducts();
+$bydemes->saveProducts();
 
 $result = $bydemes->getTable();
 if (!$result) {
