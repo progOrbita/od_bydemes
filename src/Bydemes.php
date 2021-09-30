@@ -63,7 +63,9 @@ class Bydemes
     public function saveProducts()
     {
         $products = $this->bydemes_products;
-
+        if ($products == false) {
+            return false;
+        }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "2"; // default category inicio
         $new_prod = new Product();
