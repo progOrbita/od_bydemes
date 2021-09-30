@@ -126,10 +126,10 @@ class Bydemes
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
                     if ($date === $currentDate) {
-                        if(count($this->tableData[$ref]) > 0){
-                        $object->update();
-                        //Add new info in the table
-                        $this->tableData[$ref]['update info: '] = 'product was modified';
+                        if (count($this->tableData[$ref]) > 0) {
+                            $object->update();
+                            //Add new info in the table
+                            $this->tableData[$ref]['update info: '] = 'product was modified';
                         }
                     }
                 }
@@ -259,7 +259,7 @@ class Bydemes
                     break;
 
                 case 'quantity':
-                    if($row_value != "0"){
+                    if ($row_value != "0") {
                         $csv_values[$header] = $this->stock_values[$row_value];
                     }
                     break;
