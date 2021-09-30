@@ -12,6 +12,7 @@ class Bydemes
     private $insert_csv = [];
     private $brands = [];
     private $tableData = [];
+    private $stock_values = ['Low' => 5, 'Medium' => 50, 'High' => 100];
     /**
      * constructor
      */
@@ -188,9 +189,13 @@ class Bydemes
             //formats values from csv to be compared with the database ones
             $formatedValues = $this->formatCsv($csv_values);
 
-            //For products without reference (in database), no comparation is needed
+            /**
+             * False - product isnt added
+             * emtpy - Product doesnt have changes
+             * no empty - Product have changes
+             */
             //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
-            if (!isset($bydemes_products[$formatedValues['reference']])) {
+            if (!isset($bydemes_products[$csv_ref])) {
                 $this->tableData[$csv_ref] = false;
             } else {
                 //For products already inserted
@@ -238,6 +243,11 @@ class Bydemes
                         $csv_values[$header] = "0.000000";
                     }
                     break;
+                case 'quantity':
+                    if($row_value != "0"){
+                        $csv_values[$header] = $this->stock_values[$row_value];
+                    }
+                    break;
                     //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
                 case 'name':
                     $inches = trim(str_replace('""', '"', $row_value));
@@ -251,6 +261,7 @@ class Bydemes
                     //It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
+                    break;
             }
         }
         return $csv_values;
