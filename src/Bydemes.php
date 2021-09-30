@@ -77,7 +77,6 @@ class Bydemes
                     }
                     $new_prod->$field = $field_value;
                 }
-                $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
 
@@ -92,8 +91,9 @@ class Bydemes
                         $this->tableData[$ref]['add info: '] = 'product with reference ' . $ref . ' was added';
                     }
                 }
-                $save[] = $new_prod;
-            } else {
+            }
+            //if id is found in the database
+            else {
 
                 $id_product = $products[$ref];
                 $object = new Product($id_product);
@@ -101,7 +101,7 @@ class Bydemes
                     if (!property_exists($object, $field)) {
                         continue;
                     }
-                    if ($field == 'category') {
+                    if ($field == 'category' || $field == 'quantity') {
                         continue;
                     }
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
@@ -114,10 +114,12 @@ class Bydemes
                     //For any field which is different from the one in the database (product)
                     if ($object->$field !== $field_value) {
                         $object->$field = $field_value;
+                        if ($field == 'id_manufacturer') {
+                            continue;
+                        }
                         $this->tableData[$ref][$field] = 'changed: ' . $field_value;
                     }
                 }
-                $save[] = $object;
 
                 //All the values that are modified added onto the object then update
                 if (isset($_GET['write'])) {
