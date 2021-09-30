@@ -32,18 +32,18 @@ class Bydemes
      */
     private function getBydemesProducts()
     {
-        $id_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `language_code` = "es" ');
-        $bydemes_products = [];
-        $ref_values = array_column($this->csv_data, 'reference');
-
-        foreach ($ref_values as $value) {
-            //Obtains products which reference exist on Prestashop
-            $id = Product::getIdByReference($value);
-            if ($id) {
-                $bydemes_products[$value] = new Product($id, false, $id_es);
-            }
+        $query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
+        FROM `ps_product` p 
+        INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
+        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
+        if ($query === false) {
+            return false;
         }
-        return $bydemes_products;
+        foreach ($query as $value) {
+            $bydemes_product[$value['reference']] = $value['id_product'];
+        }
+
+        return $bydemes_product;
     }
     /**
      * Update the reference values from the csv into the database
