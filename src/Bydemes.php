@@ -218,7 +218,7 @@ class Bydemes
                     //replace needed because numbers use . not ,. cast and decimals to be compared with the database
                 case 'price':
                     $float = (float) str_replace(",", ".", $row_value);
-                    $csv_values[$header] = number_format($float,6);
+                    $csv_values[$header] = number_format($float, 6,'.','');
                     break;
 
                     //csv active is false (if 0). Need to convert it
@@ -233,7 +233,7 @@ class Bydemes
                 case 'depth':
                 case 'weight':
                     $float = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
-                    $csv_values[$header] = number_format($float,6);
+                    $csv_values[$header] = number_format($float, 6, '.', '');
                     if (empty($row_value)) {
                         $csv_values[$header] = "0.000000";
                     }
