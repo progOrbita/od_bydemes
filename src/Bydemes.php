@@ -110,11 +110,10 @@ class Bydemes
     }
     /**
      * creates the table with the information obtained from processing the csv information within the database
-     * @return bool|string false if there was an error processing the information, string with the table otherwise
+     * @return string string with the table otherwise
      */
-    public function getProcessTable()
+    public function getTable()
     {
-        
         $tableBase = '<html><head>
             <style>
                 td {
@@ -125,13 +124,12 @@ class Bydemes
             </style>
         </head>
         <body>
-            <h2>Update products</h2>
+            <h2>List of products</h2>
             <table>
         <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
-        
-        if(!empty($this->save_info)){
-            
+
+        if (!empty($this->save_info)) {
         }
         $tableBody = '';
         foreach ($this->tableData as $ref => $value) {
@@ -147,7 +145,7 @@ class Bydemes
             foreach ($value as $ref_header => $ref_value) {
                 $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
             }
-            
+
             $tableBody .= '</tr>';
         }
         $tableEnd = '</tbody></table></body></html>';
