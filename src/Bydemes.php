@@ -8,10 +8,18 @@ use Db;
 use Product;
 class Bydemes
 {
+    //Data obtained from the csv
     private $csv_data = [];
+
+    //Formatted csv values
     private $insert_csv = [];
+    //Contains the brands from the database
     private $brands = [];
+    //Assorted information to be shown
     private $tableData = [];
+    //Reference-id of products included in the database
+    private $bydemes_products = [];
+    //Default values for the three sizes of stock.
     private $stock_values = ['Low' => 5, 'Medium' => 50, 'High' => 100];
     /**
      * constructor
@@ -28,8 +36,8 @@ class Bydemes
         }
     }
     /**
-     * Obtains the products in the database with reference - id_product
-     * @return array array with the references
+     * Try to obtains the products in the database with reference - id_product
+     * @return bool|array array with the references and ids. False if there's an error in the query
      */
     private function getBydemesProducts()
     {
@@ -47,8 +55,7 @@ class Bydemes
         return $bydemes_product;
     }
     /**
-     * Update the reference values from the csv into the database
-     * @return array $update, array with pairs of references/booleans if they were or no updated
+     * Add products in the database if references doesnt exist or update them with new values from the csv
      */
     public function saveProducts()
     {
@@ -59,11 +66,11 @@ class Bydemes
 
         //insert_csv is ref as key with the array of values changed
         foreach ($this->insert_csv as $ref => $ref_values) {
-            //If no id is found in database, add the product
+            //If no id is found in database query (products), try to add the product
             if (!isset($products[$ref])) {
                 $new_prod = new Product();
                 foreach ($ref_values as $field => $field_value) {
-                    //checking if property exist in the product
+                    //checking if property in the csv exist in the product
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
@@ -72,6 +79,8 @@ class Bydemes
                 $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
+
+                //if write is written in the header
                 if (isset($_GET['write'])) {
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
@@ -101,6 +110,7 @@ class Bydemes
                         }
                         continue;
                     }
+                    //For any field which is different from the one in the database (product)
                     if ($object->$field !== $field_value) {
                         $object->$field = $field_value;
                         $this->tableData[$ref][$field] = 'changed: ' . $field_value;
@@ -122,12 +132,10 @@ class Bydemes
                 }
             }
         }
-        //return reference with true/false if query was done
-        return true;
     }
     /**
-     * creates the table with the information obtained from processing the csv information within the database
-     * @return string string with the table otherwise
+     * creates the table with the information obtained from the various products and csv proccesing
+     * @return string string with the table
      */
     public function getTable()
     {
@@ -219,7 +227,7 @@ class Bydemes
     {
         foreach ($csv_values as $header => $row_value) {
             switch ($header) {
-                    //replace needed because numbers use . not ,. cast and decimals to be compared with the database
+                    //replace needed because numbers use . not ,. cast and decimals to be compared with the database and needs 6 digits.
                 case 'price':
                     $float = (float) str_replace(",", ".", $row_value);
                     $csv_values[$header] = number_format($float, 6,'.','');
@@ -230,7 +238,7 @@ class Bydemes
                     $row_value === 'False' ? $csv_values[$header] = "0" : $csv_values[$header] = "1";
                     break;
 
-                    //For dimensions, changes letters to 0 (after removing lots of empty space)
+                    //For dimensions, changes letters to 0 (after removing lots of empty space) and 6 digits
                 case 'width':
                 case 'length':
                 case 'height':
@@ -242,22 +250,25 @@ class Bydemes
                         $csv_values[$header] = "0.000000";
                     }
                     break;
+
                 case 'quantity':
                     if($row_value != "0"){
                         $csv_values[$header] = $this->stock_values[$row_value];
                     }
                     break;
+
                     //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
                 case 'name':
                     $inches = trim(str_replace('""', '"', $row_value));
                     $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
                     break;
+
                     //database keeps <p> in the field
                 case 'description_short':
                     $csv_values[$header] = '<p>' . trim($row_value) . '</p>';
                     break;
+
                     //Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
-                    //It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
                     break;
@@ -266,7 +277,8 @@ class Bydemes
         return $csv_values;
     }
     /**
-     * post-processing description
+     * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
+     * It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
      */
     private function process_desc($row_value)
     {
