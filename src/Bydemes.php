@@ -217,7 +217,7 @@ class Bydemes
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                     if (empty($id_manufacturer)) {
-                        $this->tableData[$csv_ref][$field] = $value . ' not found';
+                        $this->tableData[$csv_ref]['brand'] = '<b>'.$value . '</b> not found';
                     }
                     continue;
                 }
