@@ -51,23 +51,15 @@ class Bydemes
      */
     public function saveProducts()
     {
-        //obtains id => ref from all bydemes products. 
-        $bydemes_refs = Db::getInstance()->executeS('SELECT `id_product`,`reference` FROM `ps_product` WHERE `id_supplier` = 1');
-        //adds prestashop id if reference exist in the array
-        foreach ($bydemes_refs as $value) {
-            if (array_key_exists($value['reference'], $this->insert_csv)) {
-                $this->insert_csv[$value['reference']]['id_product'] = $value['id_product'];
-            }
-        }
+
+        $products = $this->getBydemesProducts();
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "2"; // default category inicio
 
         //insert_csv is ref as key with the array of values changed
         foreach ($this->insert_csv as $ref => $ref_values) {
-
             //If no id is found in database, add the product
-            if (!isset($ref_values['id_product'])) {
-
+            if (!isset($products[$ref])) {
                 $new_prod = new Product();
                 foreach ($ref_values as $field => $field_value) {
                     //checking if property exist in the product
@@ -79,23 +71,40 @@ class Bydemes
                 $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
-                $add = $new_prod->add();
-                if($add){
-                    $this->tableData[$ref]['add info: '] = 'product was added';
-                }
+                //$new_prod->add();
+                //Add new info in the table
+                $this->tableData[$ref]['add info: '] = 'product was added';
                 $new_prod->addSupplierReference($bydemes_id, 0);
+                $save[] = $new_prod;
             } else {
-                $id_product = $ref_values['id_product'];
+
+                $id_product = $products[$ref];
                 $object = new Product($id_product);
                 foreach ($ref_values as $field => $field_value) {
-                    $object->$field = $field_value;
+                    if (!property_exists($object, $field)) {
+                        continue;
+                    }
+                    if ($field == 'category') {
+                        continue;
+                    }
+                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
+                        if ($object->$field[1] !== $field_value) {
+                            $this->tableData[$ref][$field] = substr($field_value,0,200);
+                        }
+                        continue;
+                    }
+                    if ($object->$field !== $field_value) {
+                        $this->tableData[$ref][$field] = $field_value;
+                    }
                 }
+                $save[] = $object;
+
                 //All the values that are modified added onto the object then update
                 $save = $object->update();
+
                 $this->tableData[$ref]['update info: '] = 'product was modified';
             }
-        } 
-
+        }
         //return reference with true/false if query was done
         return true;
     }
