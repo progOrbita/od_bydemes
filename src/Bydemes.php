@@ -160,12 +160,10 @@ class Bydemes
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
-
         $bydemes_products = $this->getBydemesProducts();
         if (!$bydemes_products) {
             return false;
         }
-        $this->tableData = [];
 
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
@@ -177,45 +175,19 @@ class Bydemes
             //TODO various checks so data is fine (price cant be 0, reference and so). Or at least, show odd information in the table
             if (!isset($bydemes_products[$formatedValues['reference']])) {
                 $this->tableData[$csv_ref] = false;
-                foreach ($csv_values as $field => $value) {
-
-                    if ($field === 'manufacturer_name') {
-                        $id_manufacturer = array_search($formatedValues[$field], $this->brands);
-                        $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
-                        continue;
-                    }
-                    $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
-                }
             } else {
-
                 //For products already inserted
-
                 $this->tableData[$csv_ref] = [];
-                foreach ($csv_values as $field => $value) {
-                    //If field in csv dont exist in database skip it (id_csv, image URL and so)
-                    if (!property_exists($bydemes_products[$csv_ref], $field)) {
-                        continue;
-                    }
-                        //TODO remade for the product, manufacturer name is null in database, from id obtain name and then compare or so
-
-                    if ($field === 'manufacturer_name' || $field === 'category') {
-                        continue;
-                    }
-
-                    if (trim($bydemes_products[$csv_ref]->$field) != $formatedValues[$field]) {
-
-                        $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
-                        if (strlen($bydemes_products[$csv_ref]->$field) > 40) {
-                            $this->tableData[$csv_ref][$field] = 'is changed <b>' . substr($bydemes_products[$csv_ref]->$field, 0, 255) . ' ...</b>';
-                            continue;
-                        }
-                        $this->tableData[$csv_ref][$field] = 'from : <b>' . trim($bydemes_products[$csv_ref]->$field, '\0') . '</b> to <b>' . $formatedValues[$field] . '</b>';
-                    }
+            }
+            foreach ($csv_values as $field => $value) {
+                if ($field === 'manufacturer_name') {
+                    $id_manufacturer = array_search($formatedValues[$field], $this->brands);
+                    $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                    continue;
                 }
+                $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
             }
         }
-
-        return $this->tableData;
     }
     /**
      * Format the Csv values so they can be compared with the values on the database.
