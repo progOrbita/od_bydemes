@@ -23,18 +23,11 @@ if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activ
 $data_file = $reader->read();
 $bydemes = new Bydemes($data_file);
 $process_csv = $bydemes->processCsv();
+$save = $bydemes->saveProducts();
 
-if (isset($_GET['write'])) {
-    $date = $_GET['write'];
-    $currentDate = date('d_m_Y');
-
-    echo('<p>write today to update or create the product</p>');
-    if ($date === $currentDate) {
-        $save = $bydemes->saveProducts();
-    }
-}
 $result = $bydemes->getTable();
 if (!$result) {
     die('<p>query couldnt be done</p>');
 }
+echo '<p>Write today date to update the list</p>';
 echo $result;
