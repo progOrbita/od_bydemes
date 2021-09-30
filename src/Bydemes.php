@@ -239,11 +239,13 @@ class Bydemes
     /**
      * post-processing description
      */
-    private function process_desc($row_value){
+    private function process_desc($row_value)
+    {
         $desc_clean = trim($row_value);
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
-        $desc_processed = str_replace('<br>','<br />',$desc_encoded);
+        $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
+        //Should change no alt at <img ... > to <img ... alt="" />
         return html_entity_decode($desc_processed, ENT_NOQUOTES, 'UTF-8');
     }
 }
