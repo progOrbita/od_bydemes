@@ -293,6 +293,12 @@ class Bydemes
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
+        //if alt isn't added. Prestashop format the img to add alt attribute with the img name on it.
+        if(preg_match('/<img/',$desc_processed)){
+            if(!preg_match('/alt=""/',$desc_processed)){
+                $desc_processed = preg_replace('/">/','" alt="" />',$desc_processed);
+            }
+        }
         //Should change no alt at <img ... > to <img ... alt="" />
         return html_entity_decode($desc_processed, ENT_NOQUOTES, 'UTF-8');
     }
