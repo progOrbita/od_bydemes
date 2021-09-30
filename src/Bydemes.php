@@ -23,7 +23,7 @@ class Bydemes
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
 
         foreach ($brands_query as $brand) {
-            $this->brands[$brand['id_manufacturer']] = $brand['name'];
+            $this->brands[$brand['name']] = $brand['id_manufacturer'];
         }
     }
     /**
@@ -198,7 +198,7 @@ class Bydemes
             }
             foreach ($csv_values as $field => $value) {
                 if ($field === 'manufacturer_name') {
-                    $id_manufacturer = array_search($formatedValues[$field], $this->brands);
+                    $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                     continue;
                 }
