@@ -72,7 +72,6 @@ class Bydemes
                 $new_prod->supplier_name = 'bydemes';
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
-                //$new_prod->add();
                 if (isset($_GET['write'])) {
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
