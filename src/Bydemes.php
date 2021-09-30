@@ -71,7 +71,7 @@ class Bydemes
         $new_prod = new Product();
         //insert_csv is ref as key with the array of values changed
         foreach ($this->insert_csv as $ref => $ref_values) {
-            if(stristr($ref,'no')){
+            if (stristr($ref, 'no')) {
                 $this->tableData[$ref]['<b>this'] = 'product wont be added</b>';
                 continue;
             }
