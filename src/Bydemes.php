@@ -135,8 +135,8 @@ class Bydemes
                     $currentDate = date('d_m_Y');
                     if ($date === $currentDate) {
                         if (count($this->tableData[$ref]) > 0) {
-                            $new_prod->update();
                             //Add new info in the table
+                            $new_prod->update();
                             $this->tableData[$ref]['update info: '] = 'product was modified';
                         }
                     }
