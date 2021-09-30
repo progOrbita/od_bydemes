@@ -140,7 +140,7 @@ class Bydemes
      * creates the table with the information obtained from the various products and csv proccesing
      * @return string string with the table
      */
-    public function getTable()
+    public function getTable(): string
     {
         $tableBase = '<html><head>
             <style>
@@ -237,7 +237,7 @@ class Bydemes
                     //replace needed because numbers use . not ,. cast and decimals to be compared with the database and needs 6 digits.
                 case 'price':
                     $float = (float) str_replace(",", ".", $row_value);
-                    $csv_values[$header] = number_format($float, 6,'.','');
+                    $csv_values[$header] = number_format($float, 6, '.', '');
                     break;
 
                     //csv active is false (if 0). Need to convert it
