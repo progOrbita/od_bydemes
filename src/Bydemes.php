@@ -64,12 +64,11 @@ class Bydemes
 
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "2"; // default category inicio
-
+        $new_prod = new Product();
         //insert_csv is ref as key with the array of values changed
         foreach ($this->insert_csv as $ref => $ref_values) {
             //If no id is found in database query (products), try to add the product
             if (!isset($products[$ref])) {
-                $new_prod = new Product();
                 foreach ($ref_values as $field => $field_value) {
                     //checking if property in the csv exist in the product
                     if (!property_exists($new_prod, $field)) {
@@ -96,38 +95,39 @@ class Bydemes
             else {
 
                 $id_product = $products[$ref];
-                $object = new Product($id_product);
+                $new_prod->__construct($id_product);
                 foreach ($ref_values as $field => $field_value) {
-                    if (!property_exists($object, $field)) {
+                    if (!property_exists($new_prod, $field)) {
                         continue;
                     }
+                    //temp, fields not needed
                     if ($field == 'category' || $field == 'quantity') {
                         continue;
                     }
+                    //Either find id_lang in a query (as a var inside the function) and add it, or just put 1.
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                        if ($object->$field[1] !== $field_value) {
+                        if ($new_prod->$field[1] !== $field_value) {
                             $this->tableData[$ref][$field] = 'changed: ' . substr($field_value, 0, 200) . ' ...';
-                            $object->$field = $field_value;
+                            $new_prod->$field = $field_value;
                         }
                         continue;
                     }
                     //For any field which is different from the one in the database (product)
-                    if ($object->$field !== $field_value) {
-                        $object->$field = $field_value;
+                    if ($new_prod->$field !== $field_value) {
+                        $new_prod->$field = $field_value;
                         if ($field == 'id_manufacturer') {
                             continue;
                         }
                         $this->tableData[$ref][$field] = 'changed: ' . $field_value;
                     }
                 }
-
                 //All the values that are modified added onto the object then update
                 if (isset($_GET['write'])) {
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
                     if ($date === $currentDate) {
                         if (count($this->tableData[$ref]) > 0) {
-                            $object->update();
+                            $new_prod->update();
                             //Add new info in the table
                             $this->tableData[$ref]['update info: '] = 'product was modified';
                         }
