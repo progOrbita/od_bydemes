@@ -27,7 +27,7 @@ class Bydemes
         }
     }
     /**
-     * Obtains the database products based on the reference
+     * Obtains the products in the database with reference - id_product
      * @return array array with the references
      */
     private function getBydemesProducts()
@@ -72,9 +72,16 @@ class Bydemes
                 $new_prod->id_supplier = $bydemes_id;
                 $new_prod->id_category_default = $default_category;
                 //$new_prod->add();
-                //Add new info in the table
-                $this->tableData[$ref]['add info: '] = 'product was added';
-                $new_prod->addSupplierReference($bydemes_id, 0);
+                if (isset($_GET['write'])) {
+                    $date = $_GET['write'];
+                    $currentDate = date('d_m_Y');
+                    if ($date === $currentDate) {
+                        $new_prod->add();
+                        $new_prod->addSupplierReference($bydemes_id, 0);
+                        //Add new info in the table
+                        $this->tableData[$ref]['add info: '] = 'product with reference ' . $ref . ' was added';
+                    }
+                }
                 $save[] = $new_prod;
             } else {
 
