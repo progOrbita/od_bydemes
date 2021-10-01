@@ -229,13 +229,23 @@ class Bydemes
                  * Attemps to find the brand/manufacturer, if not found it will throw a message
                  */
                 if ($field === 'manufacturer_name') {
-                    $id_manufacturer = $this->brands[$formatedValues[$field]];
-                    $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
-                    if (empty($id_manufacturer)) {
-                        $this->tableData[$csv_ref][] = '<b>brand ' . $value . ' not found</b><td>Product will be created</td>';
+                    if (empty($formatedValues[$field])) {
+                        continue;
                     }
+                    $id_manufacturer = $this->brands[$formatedValues[$field]];
+                    if (empty($id_manufacturer)) {
+                        $this->tableData[$csv_ref][] = 'brand <b>' . $value . '</b> not found creating...<td>Product will be created</td>';
+                        $new_brand = new Manufacturer();
+                        $new_brand->name = $value;
+                        $new_brand->active = 1;
+                        $new_brand->add();
+                        $this->brands[$value] = $new_brand->id;
+                        $id_manufacturer = $this->brands[$formatedValues[$field]];
+                    }
+                    $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                     continue;
                 }
+
                 if ($field === 'price') {
                     if ($formatedValues[$field] == '0.000000') {
                         $this->tableData[$csv_ref][] = ' <b>price is emtpy</b>';
