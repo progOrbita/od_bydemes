@@ -67,12 +67,12 @@ class Bydemes
             return false;
         }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-        $default_category = "2"; // default category inicio
+        $default_category = "1"; // default category inicio
         $new_prod = new Product();
         //insert_csv is ref as key with the array of values changed
         foreach ($this->insert_csv as $ref => $ref_values) {
             if (stristr($ref, 'no')) {
-                $this->tableData[$ref]['<b>this'] = 'product wont be added</b>';
+                $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
             //If no id is found in database query (products), try to add the product
@@ -95,7 +95,7 @@ class Bydemes
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
                         //Add new info in the table
-                        $this->tableData[$ref]['add info: '] = 'product with reference ' . $ref . ' was added';
+                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
                 }
             }
@@ -115,7 +115,7 @@ class Bydemes
                     //Either find id_lang in a query (as a var inside the function) and add it, or just put 1.
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                         if ($new_prod->$field[1] !== $field_value) {
-                            $this->tableData[$ref][$field] = 'changed: ' . substr($field_value, 0, 200) . ' ...';
+                            $this->tableData[$ref][] = $field. ' changed: ' . substr($field_value, 0, 200) . ' ...';
                             $new_prod->$field = $field_value;
                         }
                         continue;
@@ -126,7 +126,7 @@ class Bydemes
                         if ($field == 'id_manufacturer') {
                             continue;
                         }
-                        $this->tableData[$ref][$field] = 'changed: ' . $field_value;
+                        $this->tableData[$ref][] = $field. 'changed: ' . $field_value;
                     }
                 }
                 //All the values that are modified added onto the object then update
@@ -134,10 +134,10 @@ class Bydemes
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
                     if ($date === $currentDate) {
-                        if (count($this->tableData[$ref]) > 0) {
+                        if (count($this->tableData[$ref]) > 1) {
                             //Add new info in the table
                             $new_prod->update();
-                            $this->tableData[$ref]['update info: '] = 'product was modified';
+                            $this->tableData[$ref][] = 'update info: product was modified';
                         }
                     }
                 }
@@ -179,13 +179,13 @@ class Bydemes
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
                 continue;
             }
-            $tableBody .= '<tr><td>' . $ref . '</td><td>exist</td>';
+            $tableBody .= '<tr><td>' . $ref . '</td>';
             if (empty($value)) {
                 $tableBody .= '<td>Product up to date</td>';
                 continue;
             }
             foreach ($value as $ref_header => $ref_value) {
-                $tableBody .= '<td>' . $ref_header . ' ' . $ref_value . '</td>';
+                $tableBody .= '<td>' . $ref_value . '</td>';
             }
             $tableBody .= '</tr>';
         }
@@ -201,7 +201,6 @@ class Bydemes
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
-
         if (!$this->bydemes_products) {
             return false;
         }
@@ -222,6 +221,8 @@ class Bydemes
             } else {
                 //For products already inserted
                 $this->tableData[$csv_ref] = [];
+                $this->tableData[$csv_ref][] = 'exist';
+
             }
             foreach ($csv_values as $field => $value) {
                 /**
@@ -231,13 +232,13 @@ class Bydemes
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
                     if (empty($id_manufacturer)) {
-                        $this->tableData[$csv_ref]['<b>brand'] = $value . ' not found</b>';
+                        $this->tableData[$csv_ref][] = '<b>brand ' . $value . ' not found</b><td>Product will be created</td>';
                     }
                     continue;
                 }
                 if ($field === 'price') {
                     if ($formatedValues[$field] == '0.000000') {
-                        $this->tableData[$csv_ref]['<b>price'] = ' is emtpy</b>';
+                        $this->tableData[$csv_ref][] = ' <b>price is emtpy</b>';
                     }
                 }
                 $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
