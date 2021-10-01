@@ -312,6 +312,8 @@ class Bydemes
         $desc_clean = trim($row_value);
         //br at the end of the description field is removed in prestashop
         $desc_clean = preg_replace('/<br>$/', '', $desc_clean);
+        //for font-weight, added in database without an space
+        $desc_clean = preg_replace('/: bold/', ':bold', $desc_clean);
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
