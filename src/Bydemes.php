@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OrbitaDigital\OdBydemes;
 
 use Db;
+use Manufacturer;
 use Product;
 class Bydemes
 {
@@ -49,11 +50,12 @@ class Bydemes
         FROM `ps_product` p 
         INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
         INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
-        
+
         if ($query === false) {
             return false;
         }
-        if(empty($query)){
+        //If there's no products of Bydemes in database. Different from false
+        if (empty($query)) {
             return [];
         }
         foreach ($query as $value) {
@@ -69,7 +71,7 @@ class Bydemes
     {
         $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
         $products = $this->bydemes_products;
-        
+
         if ($products == false && !empty($products)) {
             return false;
         }
@@ -79,6 +81,8 @@ class Bydemes
         //insert_csv is ref as key with the array of values changed
         
         foreach ($this->insert_csv as $ref => $ref_values) {
+            $new_prod->__construct();
+            //For products that have "no" in their reference
             if (stristr($ref, 'no')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
@@ -88,6 +92,10 @@ class Bydemes
                 foreach ($ref_values as $field => $field_value) {
                     //checking if property in the csv exist in the product class
                     if (!property_exists($new_prod, $field)) {
+                        continue;
+                    }
+                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
+                        $new_prod->$field[$this->lang_es] = $field_value;
                         continue;
                     }
                     $new_prod->$field = $field_value;
@@ -100,6 +108,7 @@ class Bydemes
                     $date = $_GET['write'];
                     $currentDate = date('d_m_Y');
                     if ($date === $currentDate) {
+
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
                         //Add new info in the table
@@ -174,9 +183,6 @@ class Bydemes
             <table>
         <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
-
-        if (!empty($this->save_info)) {
-        }
         $tableBody = '';
         foreach ($this->tableData as $ref => $value) {
             /**
