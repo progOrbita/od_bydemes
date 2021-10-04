@@ -107,7 +107,7 @@ class Bydemes
 
                 $id_product = $products[$ref];
                 $new_prod->__construct($id_product);
-                
+
                 foreach ($ref_values as $field => $field_value) {
                     if (!property_exists($new_prod, $field)) {
                         continue;
@@ -118,7 +118,7 @@ class Bydemes
                     }
                     //Either find id_lang in a query (as a var inside the function) and add it, or just put 1.
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                        if ($new_prod->$field[$this->lang_es] !== $field_value) {                              
+                        if ($new_prod->$field[$this->lang_es] != $field_value) {
                             $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
 
                             $new_prod->$field = $field_value;
@@ -146,7 +146,6 @@ class Bydemes
                         }
                     }
                 }
-                
             }
         }
         return true;
