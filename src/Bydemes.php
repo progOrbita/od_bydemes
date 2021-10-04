@@ -338,6 +338,13 @@ class Bydemes
                 $desc_processed = preg_replace('/">/', '" alt="" />', $desc_processed);
             }
         }
-        return html_entity_decode($desc_processed, ENT_COMPAT, 'UTF-8');
+        
+        $utfText = html_entity_decode($desc_processed, ENT_COMPAT, 'UTF-8');
+        //for & also is decodified to &amp;
+        $utfText = preg_replace('/&/',"&amp;", $utfText);
+        //for greater than symbol, Prestashop decode it
+        return preg_replace('/\s>(?=\d+)/'," &gt;", $utfText);
+
+        
     }
 }
