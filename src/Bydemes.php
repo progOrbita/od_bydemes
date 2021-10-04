@@ -81,7 +81,7 @@ class Bydemes
             //If no id is found in database query (products), try to add the product
             if (!isset($products[$ref])) {
                 foreach ($ref_values as $field => $field_value) {
-                    //checking if property in the csv exist in the product
+                    //checking if property in the csv exist in the product class
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
@@ -120,8 +120,7 @@ class Bydemes
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                         if ($new_prod->$field[$this->lang_es] != $field_value) {
                             $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
-
-                            $new_prod->$field = $field_value;
+                            $new_prod->$field[$this->lang_es] = $field_value;
                         }
                         continue;
                     }
