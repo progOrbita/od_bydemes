@@ -49,13 +49,16 @@ class Bydemes
         FROM `ps_product` p 
         INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
         INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
+        
         if ($query === false) {
             return false;
+        }
+        if(empty($query)){
+            return [];
         }
         foreach ($query as $value) {
             $bydemes_product[$value['reference']] = $value['id_product'];
         }
-
         return $bydemes_product;
     }
     /**
@@ -66,13 +69,15 @@ class Bydemes
     {
         $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
         $products = $this->bydemes_products;
-        if ($products == false) {
+        
+        if ($products == false && !empty($products)) {
             return false;
         }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         $default_category = "1"; // default category inicio
         $new_prod = new Product();
         //insert_csv is ref as key with the array of values changed
+        
         foreach ($this->insert_csv as $ref => $ref_values) {
             if (stristr($ref, 'no')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
@@ -205,7 +210,7 @@ class Bydemes
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
-        if (!$this->bydemes_products) {
+        if (!$this->bydemes_products && !empty($this->bydemes_products)) {
             return false;
         }
 
