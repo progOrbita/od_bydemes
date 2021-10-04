@@ -131,7 +131,7 @@ class Bydemes
                         if ($field == 'id_manufacturer') {
                             continue;
                         }
-                        $this->tableData[$ref][] = $field. 'changed: ' . $field_value;
+                        $this->tableData[$ref][] = $field . 'changed: ' . $field_value;
                     }
                 }
                 //All the values that are modified added onto the object then update
@@ -146,6 +146,7 @@ class Bydemes
                         }
                     }
                 }
+                
             }
         }
         return true;
@@ -227,7 +228,6 @@ class Bydemes
                 //For products already inserted
                 $this->tableData[$csv_ref] = [];
                 $this->tableData[$csv_ref][] = 'exist';
-
             }
             foreach ($csv_values as $field => $value) {
                 /**
@@ -332,7 +332,7 @@ class Bydemes
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
-        //if alt isn't added. Prestashop format the img to add alt attribute with the img name on it.
+        //if alt isn't added in img. Prestashop format the img tag to add alt attribute with the img name on it.
         if (preg_match('/<img/', $desc_processed)) {
             if (!preg_match('/alt=""/', $desc_processed)) {
                 $desc_processed = preg_replace('/">/', '" alt="" />', $desc_processed);
