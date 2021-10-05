@@ -19,7 +19,7 @@ class Bydemes
     //Contains the brands from the database
     private $brands = [];
 
-    //Assorted information to be shown
+    //Assorted information to be shown to the user
     private $tableData = [];
 
     //Reference-id of products included in the database
@@ -71,13 +71,12 @@ class Bydemes
         return $bydemes_product;
     }
     /**
-     * Add products in the database if references doesnt exist or update them with new values from the csv
+     * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
      * @return bool false if there's an error in a query
      */
     public function saveProducts()
     {
         $products = $this->bydemes_products;
-
         if ($products == false) {
             return false;
         }
@@ -92,7 +91,7 @@ class Bydemes
         foreach ($this->insert_csv as $ref => $ref_values) {
 
             //For products that have "no" in their reference
-            if (stristr($ref, 'no') || stristr($this->insert_csv[$ref]['name'],'descatalogado')) {
+            if (stristr($ref, 'no') || stristr($this->insert_csv[$ref]['name'], 'descatalogado')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
@@ -106,6 +105,7 @@ class Bydemes
                 $new_prod->__construct($id_product);
                 $ref_exist = true;
             }
+            //prepare the product, ready to be inserted in the database
             foreach ($ref_values as $field => $field_value) {
                 //checking if property in the csv exist in the product class
                 if (!property_exists($new_prod, $field)) {
@@ -157,12 +157,13 @@ class Bydemes
 
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
+
                         //If it have more than 0, quantity is added (after creating the Product because id is needed)
                         if ($new_prod->quantity > 0) {
                             $new_prod_id = $new_prod->getIdByReference($new_prod->reference);
                             StockAvailable::setQuantity($new_prod_id, 0, $new_prod->quantity);
                         }
-                        //Add new info in the table
+                        //Add information in the table
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
                 }
@@ -215,7 +216,7 @@ class Bydemes
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
-     * Process the csv information, cformating the fields so they can be inserted or updated into the database
+     * Process the csv information, formating the fields so they can be inserted or updated into the database
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
     public function processCsv()
@@ -277,7 +278,7 @@ class Bydemes
         }
     }
     /**
-     * Format the Csv values so they can be compared with the values on the database.
+     * Format the Csv values so they can be compared with the values of Prestashop
      * @param array $csv_values array with the values of the csv of a row (chosed by reference)
      * @return array $csv_values array with the formated values
      */
@@ -285,7 +286,8 @@ class Bydemes
     {
         foreach ($csv_values as $header => $row_value) {
             switch ($header) {
-                    //replace needed because numbers use . not ,. cast and decimals to be compared with the database and needs 6 digits.
+
+                    //replace needed because numbers use . not ,. cast and decimals needed to be compared with the database, 6 digits as prestashop.
                 case 'price':
                     $float = (float) str_replace(",", ".", $row_value);
                     $csv_values[$header] = number_format($float, 6, '.', '');
@@ -296,7 +298,7 @@ class Bydemes
                     $row_value === 'False' ? $csv_values[$header] = "0" : $csv_values[$header] = "1";
                     break;
 
-                    //For dimensions, changes letters to 0 (after removing lots of empty space) and 6 digits
+                    //For dimensions, changes letters to 0, removes lots of empty space and needs 6 digits like prestashop
                 case 'width':
                 case 'length':
                 case 'height':
@@ -308,6 +310,7 @@ class Bydemes
                         $csv_values[$header] = "0.000000";
                     }
                     break;
+
                     //low/medium/high values, turned values into numbers.
                 case 'quantity':
                     if ($row_value != "0") {
@@ -315,15 +318,15 @@ class Bydemes
                     }
                     break;
 
-                    //replace if there's "" to only one and all the emtpy space. Then removes " at the beggining and the end if they exists.
+                    //replace if there's "" to only one and removes all the emtpy space. Then removes " at the beggining and the end if they exists.
                 case 'name':
                     $inches = trim(str_replace('""', '"', $row_value));
                     $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
                     break;
 
-                    //database keeps <p> in the field
+                    //prestashop keeps <p> in the field. Values aren't decoded
                 case 'description_short':
-                    $decoded_short_desc = html_entity_decode($csv_values[$header],ENT_QUOTES,"UTF-8");
+                    $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
                     $csv_values[$header] = '<p>' . trim($decoded_short_desc) . '</p>';
                     break;
 
@@ -338,29 +341,34 @@ class Bydemes
     /**
      * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
      * It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
+     * @param string $row_value description value to be processed
+     * @return string description processed
      */
-    private function process_desc($row_value)
+    private function process_desc($row_value): string
     {
+        //removes all the empty space, usually at the end of the description
         $desc_clean = trim($row_value);
         //br at the end of the description field is removed in prestashop
         $desc_clean = preg_replace('/<br>$/', '', $desc_clean);
-        
+        //description may not have <p> at the beggining and the end. It's added if it's needed
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
-        //if alt isn't added in img. Prestashop format the img tag to add alt attribute with the img name on it.
+        //if alt isn't added in img. Prestashop format the img tag to add alt attribute with the img name on it if doesn't have one. Added a default one.
         if (preg_match('/<img/', $desc_processed)) {
             if (!preg_match('/alt=""/', $desc_processed)) {
                 $desc_processed = preg_replace('/">/', '" alt="" />', $desc_processed);
             }
         }
+        //decoded text for acute; ncute; and more symbols.
         $utfText = html_entity_decode($desc_processed, ENT_QUOTES, 'UTF-8');
-        //for & also is decodified to &amp;
+        //for &, is decodified to &amp; in prestashop
         $utfText = preg_replace('/&/', "&amp;", $utfText);
-        //for greater than symbol, Prestashop decode it. Regex is pick the ">" followed (?=) by one or more numbers
+        //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing tags >
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
-        //for styles, in database without spaces. 
-        //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after
+
+        //for styles, in database without spaces.
+        //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
         return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
     }
 }
