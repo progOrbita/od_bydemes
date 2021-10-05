@@ -115,10 +115,10 @@ class Bydemes
                 if ($field == 'category') {
                     continue;
                 }
-                if($field == 'quantity' && $ref_exist == true){
+                if ($field == 'quantity' && $ref_exist == true) {
                     $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
-                    if($new_prod->$field != $field_value){
-                        StockAvailable::setQuantity($id_product,0,$new_prod->quantity);
+                    if ($new_prod->$field != $field_value) {
+                        StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
                         $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                         continue;
                     }
@@ -139,7 +139,7 @@ class Bydemes
                 }
                 $new_prod->$field = $field_value;
             }
-            
+
             //if write is written in the header
             if (isset($_GET['write'])) {
                 $date = $_GET['write'];
@@ -158,9 +158,9 @@ class Bydemes
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
                         //If it have more than 0, quantity is added (after creating the Product because id is needed)
-                        if($new_prod->quantity > 0){
+                        if ($new_prod->quantity > 0) {
                             $new_prod_id = $new_prod->getIdByReference($new_prod->reference);
-                            StockAvailable::setQuantity($new_prod_id,0,$new_prod->quantity);
+                            StockAvailable::setQuantity($new_prod_id, 0, $new_prod->quantity);
                         }
                         //Add new info in the table
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
@@ -308,7 +308,7 @@ class Bydemes
                         $csv_values[$header] = "0.000000";
                     }
                     break;
-
+                    //low/medium/high values, turned values into numbers.
                 case 'quantity':
                     if ($row_value != "0") {
                         $csv_values[$header] = $this->stock_values[$row_value];
@@ -326,7 +326,7 @@ class Bydemes
                     $csv_values[$header] = '<p>' . trim($row_value) . '</p>';
                     break;
 
-                    //Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
+                    //Various changes to encode the string according the product
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
                     break;
