@@ -18,12 +18,15 @@ $reader = new Csv(
 );
 
 if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activo', 'PVP', 'Description', 'Short description', 'Title', 'Category', 'Family', 'SubFamily', 'Compatible products', 'imageURL', 'EAN', 'length', 'width', 'height', 'volume', 'weight', 'Product URL'])) {
-    die($this->lastError = 'header is not fine');
+    die('header is not the same than the file');
 }
 $data_file = $reader->read();
 $bydemes = new Bydemes($data_file);
-$process_csv = $bydemes->processCsv();
+
+//needed to do anything, else nothing is displayed
+$bydemes->processCsv();
 $save = $bydemes->saveProducts();
+//error in the query
 if($save==false){
     die('<h3>Error obtaining the data</h3>');
 }
