@@ -90,82 +90,67 @@ class Bydemes
         //insert_csv is ref as key with the array of values changed
 
         foreach ($this->insert_csv as $ref => $ref_values) {
-            $new_prod->__construct();
+
             //For products that have "no" in their reference
             if (stristr($ref, 'no')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
-            //If no id is found in database query (products), try to add the product
-            if (!isset($products[$ref])) {
-                foreach ($ref_values as $field => $field_value) {
-                    //checking if property in the csv exist in the product class
-                    if (!property_exists($new_prod, $field)) {
-                        continue;
-                    }
-                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                        $new_prod->$field[$this->lang_es] = $field_value;
-                        continue;
-                    }
-                    $new_prod->$field = $field_value;
-                }
-                $new_prod->id_supplier = $bydemes_id;
-                $new_prod->id_category_default = $default_category;
+            //refresh the Product for each row
+            $new_prod->__construct();
 
-                //if write is written in the header
-                if (isset($_GET['write'])) {
-                    $date = $_GET['write'];
-                    $currentDate = date('d_m_Y');
-                    if ($date === $currentDate) {
-
-                        $new_prod->add();
-                        $new_prod->addSupplierReference($bydemes_id, 0);
-                        //Add new info in the table
-                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
-                    }
-                }
-            }
-            //if id is found in the database
-            else {
-
+            //bool to check if reference exist or no in the database
+            $ref_exist = false;
+            if (isset($products[$ref])) {
                 $id_product = $products[$ref];
                 $new_prod->__construct($id_product);
-
-                foreach ($ref_values as $field => $field_value) {
-                    if (!property_exists($new_prod, $field)) {
-                        continue;
-                    }
-                    //temp, fields not needed
-                    if ($field == 'category' || $field == 'quantity') {
-                        continue;
-                    }
-                    //Either find id_lang in a query (as a var inside the function) and add it, or just put 1.
-                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
+                $ref_exist = true;
+            }
+            foreach ($ref_values as $field => $field_value) {
+                //checking if property in the csv exist in the product class
+                if (!property_exists($new_prod, $field)) {
+                    continue;
+                }
+                if ($field == 'category' || $field == 'quantity') {
+                    continue;
+                }
+                if ($field == 'description' || $field == 'description_short' || $field == 'name') {
+                    if ($ref_exist) {
                         if ($new_prod->$field[$this->lang_es] != $field_value) {
                             $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
-                            $new_prod->$field[$this->lang_es] = $field_value;
                         }
-                        continue;
                     }
-                    //For any field which is different from the one in the database (product)
-                    if ($new_prod->$field !== $field_value) {
-                        $new_prod->$field = $field_value;
-                        if ($field == 'id_manufacturer') {
-                            continue;
-                        }
+                    $new_prod->$field[$this->lang_es] = $field_value;
+                    continue;
+                }
+                if ($ref_exist) {
+                    if ($new_prod->$field != $field_value) {
                         $this->tableData[$ref][] = $field . 'changed: ' . $field_value;
                     }
                 }
-                //All the values that are modified added onto the object then update
-                if (isset($_GET['write'])) {
-                    $date = $_GET['write'];
-                    $currentDate = date('d_m_Y');
-                    if ($date === $currentDate) {
+                $new_prod->$field = $field_value;
+            }
+
+
+            //if write is written in the header
+            if (isset($_GET['write'])) {
+                $date = $_GET['write'];
+                $currentDate = date('d_m_Y');
+                if ($date === $currentDate) {
+                    if ($ref_exist) {
                         if (count($this->tableData[$ref]) > 1) {
                             //Add new info in the table
                             $new_prod->update();
                             $this->tableData[$ref][] = 'update info: product was modified';
+                            continue;
                         }
+                    } else {
+                        $new_prod->id_supplier = $bydemes_id;
+                        $new_prod->id_category_default = $default_category;
+                        $new_prod->add();
+                        $new_prod->addSupplierReference($bydemes_id, 0);
+                        //Add new info in the table
+                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
                 }
             }
