@@ -14,16 +14,22 @@ class Bydemes
 
     //Formatted csv values
     private $insert_csv = [];
+
     //Contains the brands from the database
     private $brands = [];
+
     //Assorted information to be shown
     private $tableData = [];
+
     //Reference-id of products included in the database
     private $bydemes_products = [];
+
     //lang for spanish
     private $lang_es;
+
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => 5, 'Medium' => 50, 'High' => 100];
+
     /**
      * constructor
      * @param array $csv_data data obtained from reading the csv
@@ -76,10 +82,12 @@ class Bydemes
             return false;
         }
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
+
         $default_category = "1"; // default category inicio
         $new_prod = new Product();
+
         //insert_csv is ref as key with the array of values changed
-        
+
         foreach ($this->insert_csv as $ref => $ref_values) {
             $new_prod->__construct();
             //For products that have "no" in their reference
