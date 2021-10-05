@@ -81,7 +81,6 @@ class Bydemes
         if ($products == false) {
             return false;
         }
-
         $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
 
@@ -93,7 +92,7 @@ class Bydemes
         foreach ($this->insert_csv as $ref => $ref_values) {
 
             //For products that have "no" in their reference
-            if (stristr($ref, 'no')) {
+            if (stristr($ref, 'no') || stristr($this->insert_csv[$ref]['name'],'descatalogado')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
@@ -155,6 +154,7 @@ class Bydemes
                     } else {
                         $new_prod->id_supplier = $bydemes_id;
                         $new_prod->id_category_default = $default_category;
+
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
                         //If it have more than 0, quantity is added (after creating the Product because id is needed)
@@ -359,7 +359,8 @@ class Bydemes
         $utfText = preg_replace('/&/', "&amp;", $utfText);
         //for greater than symbol, Prestashop decode it. Regex is pick the ">" followed (?=) by one or more numbers
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
-        //for styles, added in database without spaces. Check if a description contains a style
+        //for styles, in database without spaces. 
+        //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after
         return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
     }
 }
