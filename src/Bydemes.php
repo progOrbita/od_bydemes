@@ -61,7 +61,7 @@ class Bydemes
         if ($query === false) {
             return false;
         }
-        //If there's no products of Bydemes in database. Different from false
+        //If there's no products of Bydemes in database but query is well made
         if (empty($query)) {
             return ['nothing'];
         }
@@ -100,12 +100,14 @@ class Bydemes
 
             //bool to check if reference exist or no in the database
             $ref_exist = false;
+
             if (isset($products[$ref])) {
                 $id_product = $products[$ref];
                 $new_prod->__construct($id_product);
                 $ref_exist = true;
             }
-            //prepare the product, ready to be inserted in the database
+
+            //prepare the Product, ready to be inserted in the database
             foreach ($ref_values as $field => $field_value) {
                 //checking if property in the csv exist in the product class
                 if (!property_exists($new_prod, $field)) {
@@ -170,7 +172,7 @@ class Bydemes
         return true;
     }
     /**
-     * creates the table with the information obtained from the various products and csv proccesing
+     * generates the string of the table with the information obtained from the products and csv proccesing
      * @return string string with the table
      */
     public function getTable(): string
@@ -205,7 +207,7 @@ class Bydemes
                 $tableBody .= '<td>Product up to date</td>';
                 continue;
             }
-            foreach ($value as $ref_header => $ref_value) {
+            foreach ($value as $ref_value) {
                 $tableBody .= '<td>' . $ref_value . '</td>';
             }
             $tableBody .= '</tr>';
@@ -246,7 +248,7 @@ class Bydemes
             }
             foreach ($csv_values as $field => $value) {
                 /**
-                 * Attemps to find the brand/manufacturer, if not found it will throw a message
+                 * Attemps to find the brand/manufacturer, if not found it will create it
                  */
                 if ($field === 'manufacturer_name') {
                     if (empty($formatedValues[$field])) {
