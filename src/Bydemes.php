@@ -7,6 +7,7 @@ namespace OrbitaDigital\OdBydemes;
 use Db;
 use Manufacturer;
 use Product;
+use StockAvailable;
 class Bydemes
 {
     //Data obtained from the csv
@@ -28,7 +29,7 @@ class Bydemes
     private $lang_es;
 
     //Default values for the three sizes of stock.
-    private $stock_values = ['Low' => 5, 'Medium' => 50, 'High' => 100];
+    private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
     /**
      * constructor
@@ -111,8 +112,16 @@ class Bydemes
                 if (!property_exists($new_prod, $field)) {
                     continue;
                 }
-                if ($field == 'category' || $field == 'quantity') {
+                if ($field == 'category') {
                     continue;
+                }
+                if($field == 'quantity' && $ref_exist == true){
+                    $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+                    if($new_prod->$field != $field_value){
+                        StockAvailable::setQuantity($id_product,0,$new_prod->quantity);
+                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                        continue;
+                    }
                 }
                 if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                     if ($ref_exist) {
@@ -125,13 +134,12 @@ class Bydemes
                 }
                 if ($ref_exist) {
                     if ($new_prod->$field != $field_value) {
-                        $this->tableData[$ref][] = $field . 'changed: ' . $field_value;
+                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                     }
                 }
                 $new_prod->$field = $field_value;
             }
-
-
+            
             //if write is written in the header
             if (isset($_GET['write'])) {
                 $date = $_GET['write'];
@@ -149,6 +157,11 @@ class Bydemes
                         $new_prod->id_category_default = $default_category;
                         $new_prod->add();
                         $new_prod->addSupplierReference($bydemes_id, 0);
+                        //If it have more than 0, quantity is added (after creating the Product because id is needed)
+                        if($new_prod->quantity > 0){
+                            $new_prod_id = $new_prod->getIdByReference($new_prod->reference);
+                            StockAvailable::setQuantity($new_prod_id,0,$new_prod->quantity);
+                        }
                         //Add new info in the table
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
@@ -256,7 +269,7 @@ class Bydemes
 
                 if ($field === 'price') {
                     if ($formatedValues[$field] == '0.000000') {
-                        $this->tableData[$csv_ref][] = ' <b>price is emtpy</b>';
+                        $this->tableData[$csv_ref][0] .= ' <b>price is emtpy</b>';
                     }
                 }
                 $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
