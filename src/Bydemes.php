@@ -141,9 +141,7 @@ class Bydemes
 
             //if write is written in the header
             if (isset($_GET['write'])) {
-                $date = $_GET['write'];
-                $currentDate = date('d_m_Y');
-                if ($date === $currentDate) {
+                if ($_GET['write'] === date('d_m_Y')) {
                     if ($ref_exist) {
                         if (count($this->tableData[$ref]) > 1) {
                             //Add new info in the table
@@ -224,7 +222,7 @@ class Bydemes
 
         //Data = array with the references
         //bydemes_products = array with the bydemes products in the database key = reference
-        if (!$this->bydemes_products && !empty($this->bydemes_products)) {
+        if (!$this->bydemes_products) {
             return false;
         }
 
