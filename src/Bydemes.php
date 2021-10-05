@@ -62,7 +62,7 @@ class Bydemes
         }
         //If there's no products of Bydemes in database. Different from false
         if (empty($query)) {
-            return [];
+            return ['nothing'];
         }
         foreach ($query as $value) {
             $bydemes_product[$value['reference']] = $value['id_product'];
@@ -75,12 +75,13 @@ class Bydemes
      */
     public function saveProducts()
     {
-        $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
         $products = $this->bydemes_products;
 
-        if ($products == false && !empty($products)) {
+        if ($products == false) {
             return false;
         }
+
+        $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
 
         $default_category = "1"; // default category inicio
