@@ -86,11 +86,11 @@ class Bydemes
         $default_category = "1"; // default category inicio
         $new_prod = new Product();
 
-        //insert_csv is ref as key with the array of values changed
+        //insert_csv is an array with reference as key and the array of values formatted
 
         foreach ($this->insert_csv as $ref => $ref_values) {
 
-            //For products that have "no" in their reference
+            //For products that have "no" in their reference or descatalogado in the name, are skipped
             if (stristr($ref, 'no') || stristr($this->insert_csv[$ref]['name'], 'descatalogado')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
@@ -151,6 +151,7 @@ class Bydemes
                             $this->tableData[$ref][] = 'update info: product was modified';
                             continue;
                         }
+                        $this->tableData[$ref][] = 'Product up to date';
                     } else {
                         $new_prod->id_supplier = $bydemes_id;
                         $new_prod->id_category_default = $default_category;
@@ -216,7 +217,7 @@ class Bydemes
         return $tableBase . $tableBody . $tableEnd;
     }
     /**
-     * Process the csv information, formating the fields so they can be inserted or updated into the database
+     * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
      * @return bool|array false if there's an error in the query. Array with the processed information
      */
     public function processCsv()
