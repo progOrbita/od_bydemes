@@ -323,7 +323,8 @@ class Bydemes
 
                     //database keeps <p> in the field
                 case 'description_short':
-                    $csv_values[$header] = '<p>' . trim($row_value) . '</p>';
+                    $decoded_short_desc = html_entity_decode($csv_values[$header],ENT_QUOTES,"UTF-8");
+                    $csv_values[$header] = '<p>' . trim($decoded_short_desc) . '</p>';
                     break;
 
                     //Various changes to encode the string according the product
@@ -343,8 +344,7 @@ class Bydemes
         $desc_clean = trim($row_value);
         //br at the end of the description field is removed in prestashop
         $desc_clean = preg_replace('/<br>$/', '', $desc_clean);
-        //for font-weight, added in database without an space
-        $desc_clean = preg_replace('/: bold/', ':bold', $desc_clean);
+        
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
@@ -354,10 +354,12 @@ class Bydemes
                 $desc_processed = preg_replace('/">/', '" alt="" />', $desc_processed);
             }
         }
-        $utfText = html_entity_decode($desc_processed, ENT_COMPAT, 'UTF-8');
+        $utfText = html_entity_decode($desc_processed, ENT_QUOTES, 'UTF-8');
         //for & also is decodified to &amp;
         $utfText = preg_replace('/&/', "&amp;", $utfText);
-        //for greater than symbol, Prestashop decode it
-        return preg_replace('/\s>(?=\d+)/', " &gt;", $utfText);
+        //for greater than symbol, Prestashop decode it. Regex is pick the ">" followed (?=) by one or more numbers
+        $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
+        //for styles, added in database without spaces. Check if a description contains a style
+        return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
     }
 }
