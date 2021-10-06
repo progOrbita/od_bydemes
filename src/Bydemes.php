@@ -143,6 +143,8 @@ class Bydemes
 
             //bool to check if reference exist or no in the database
             $ref_exist = false;
+            //check if the product is being updated
+            $ref_update = false;
 
             if (isset($products[$ref])) {
                 $id_product = $products[$ref];
@@ -179,6 +181,7 @@ class Bydemes
                     foreach ($this->langs as $value) {
                         if ($ref_exist) {
                             if ($new_prod->$field[$value] != $field_value) {
+                                $ref_update = true;
                                 $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                             }
                         }
@@ -188,6 +191,7 @@ class Bydemes
                 }
                 if ($ref_exist) {
                     if ($new_prod->$field != $field_value) {
+                        $ref_update = true;
                         $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                     }
                 }
@@ -198,7 +202,8 @@ class Bydemes
             $write_date = Tools::getValue('write');
             if ($write_date === date('d_m_Y')) {
                 if ($ref_exist) {
-                    if (count($this->tableData[$ref]) > 1) {
+                    //more than 1 means there's changes in the database
+                    if ($ref_update) {
                         //Add new info in the table
 
                         //catch the exception if the functions throws an error
@@ -301,7 +306,7 @@ class Bydemes
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
             $csv_ref = $csv_values['reference'];
-            //formats values from csv to be compared with the database ones
+            //Assing and formats values from csv so they can be compared with the database ones
             $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
 
             /**
@@ -383,6 +388,7 @@ class Bydemes
                     //obtains manufacturer_id given the name of the brand
                 case 'manufacturer_name':
                     $csv_values['id_manufacturer'] = $this->find_brand_id($csv_values['reference'], $row_value);
+                    break;
             }
         }
         return $csv_values;
