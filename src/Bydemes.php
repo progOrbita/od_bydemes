@@ -31,8 +31,6 @@ class Bydemes
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
-    private $message = '';
-
     /**
      * constructor
      * @param array $csv_data data obtained from reading the csv
@@ -55,7 +53,6 @@ class Bydemes
         INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes"');
 
         if ($query === false) {
-            $this->message = '<h3>Error obtaining the data</h3>';
             return false;
         }
         $bydemes_product = [];
@@ -73,10 +70,6 @@ class Bydemes
             $brands[$brand['name']] = $brand['id_manufacturer'];
         }
         return $brands;
-    }
-    public function getMessage()
-    {
-        return $this->message;
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
@@ -138,8 +131,7 @@ class Bydemes
                     if ($new_prod->$field != $field_value) {
                         $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
                         if (!$getStock) {
-                            $this->message = '<b>Error, couldnt get the stock of' . $ref . '</b>';
-                            return false;
+                            $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
                         }
                         $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                         continue;
@@ -171,36 +163,44 @@ class Bydemes
                 if ($ref_exist) {
                     if (count($this->tableData[$ref]) > 1) {
                         //Add new info in the table
-                        $prod_upd = $new_prod->update();
-                        if (!$prod_upd) {
-                            $this->message = 'update info: <b>Error trying to update the product<b>';
-                            return false;
+
+                        $new_prod->id_manufacturer = 'adhsjkashd';
+                        //catch the exception if the functions throws an error
+                        try {
+                            $prod_upd = $new_prod->update();
+                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified';
+                        } catch (\Throwable $th) {
+                            $this->tableData[$ref][] = 'update info: <b>Error: ' . $th->getMessage() . '</b>';
                         }
-                        $this->tableData[$ref][] = 'update info: product was modified';
+                        continue;
                     }
                     $this->tableData[$ref][] = 'Product up to date';
                 } else {
                     $new_prod->id_supplier = $bydemes_id;
                     $new_prod->id_category_default = $default_category;
 
-                    $prod_add = $new_prod->add();
-                    if (!$prod_add) {
-                        $this->message = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
-                        return false;
-                    }
-                    $new_prod->addSupplierReference($bydemes_id, 0);
+                    try {
+                        $prod_add = $new_prod->add();
+                        if (!$prod_add) {
+                            $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
+                            continue;
+                        }
+                        $new_prod->addSupplierReference($bydemes_id, 0);
 
                     //If it have more than 0, quantity is added (after creating the Product because id is needed)
                     if ($new_prod->quantity > 0) {
 
-                        $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $new_prod->quantity);
-                        if (!$add_stock) {
-                            $this->message = 'add info: <b>Error adding stock for ' . $ref . '</b>';
-                            return false;
+                            $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $new_prod->quantity);
+                            if (!$add_stock) {
+                                $this->tableData[$ref][] = 'add info: <b>Error adding stock for ' . $ref . '</b>';
+                                continue;
+                            }
                         }
+                        //Add information in the table
+                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
+                    } catch (\Throwable $th) {
+                        $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>';
                     }
-                    //Add information in the table
-                    $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                 }
             }
         }
@@ -302,10 +302,14 @@ class Bydemes
                         $new_brand = new Manufacturer();
                         $new_brand->name = $value;
                         $new_brand->active = 1;
-                        $add_brand = $new_brand->add();
+                        try {
+                            $add_brand = $new_brand->add();
+                        } catch (\Throwable $th) {
+                            $this->tableData[$csv_ref][] = '<b>Error ' . $th->getMessage() . ' </b></td>';
+                        }
                         if (!$add_brand) {
-                            $this->message = '<b>Error, brand: ' . $value . ' couldnt be created</b>';
-                            return false;
+                            $this->tableData[$csv_ref][] = '<b>Error, brand: ' . $value . ' couldnt be created</b></td>';
+                            continue;
                         }
                         $this->brands[$value] = $new_brand->id;
                         $id_manufacturer = $this->brands[$formatedValues[$field]];
