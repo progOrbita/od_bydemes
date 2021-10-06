@@ -10,6 +10,10 @@ use PrestaShopException;
 use Product;
 use StockAvailable;
 use Tools;
+
+/**
+ * Format and process products from Bydemes into the database
+ */
 class Bydemes
 {
     //Data obtained from the csv
@@ -30,6 +34,7 @@ class Bydemes
     //langs
     private $langs = [];
 
+    //Message to identify the errors that may happen when calling the database
     private $queryError = '';
 
     //Default values for the three sizes of stock.
@@ -131,8 +136,12 @@ class Bydemes
         foreach ($this->insert_csv as $ref => $ref_values) {
 
             //For products that have "no" in their reference or descatalogado in the name, are skipped
-            if (stristr($ref, 'no') || stristr($this->insert_csv[$ref]['name'], 'descatalogado')) {
+            if (stristr($ref, 'no')) {
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
+                continue;
+            }
+            if(stristr($this->insert_csv[$ref]['name'], 'descatalogado')){
+                $this->tableData[$ref] = ['<b>this product is descatalogued, ignored</b>'];
                 continue;
             }
             //For products without price which aren't added in the database
