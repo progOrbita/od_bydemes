@@ -55,10 +55,7 @@ class Bydemes
         if ($query === false) {
             return false;
         }
-        //If there's no products of Bydemes in database but query is well made
-        if (empty($query)) {
-            return ['nothing'];
-        }
+        $bydemes_product = [];
         foreach ($query as $value) {
             $bydemes_product[$value['reference']] = $value['id_product'];
         }
@@ -81,7 +78,7 @@ class Bydemes
     public function saveProducts()
     {
         $products = $this->bydemes_products;
-        if ($products == false) {
+        if ($products === false) {
             return false;
         }
 
