@@ -50,8 +50,7 @@ class Bydemes
     {
         $query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
         FROM `ps_product` p 
-        INNER JOIN `ps_product_lang` pl ON p.id_product = pl.id_product 
-        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes" AND id_lang = 1');
+        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes"');
 
         if ($query === false) {
             return false;
