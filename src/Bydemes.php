@@ -39,13 +39,8 @@ class Bydemes
     {
         $this->csv_data = $csv_data;
 
-        //obtains all the brands from the database
-        $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
-
-        foreach ($brands_query as $brand) {
-            $this->brands[$brand['name']] = $brand['id_manufacturer'];
-        }
         $this->bydemes_products = $this->getBydemesProducts();
+        $this->brands = $this->getBrands();
     }
     /**
      * Try to obtains the products in the database with reference - id_product
@@ -69,6 +64,16 @@ class Bydemes
             $bydemes_product[$value['reference']] = $value['id_product'];
         }
         return $bydemes_product;
+    }
+    private function getBrands()
+    {
+        //obtains all the brands from the database
+        $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
+        $brands = [];
+        foreach ($brands_query as $brand) {
+            $brands[$brand['name']] = $brand['id_manufacturer'];
+        }
+        return $brands;
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
