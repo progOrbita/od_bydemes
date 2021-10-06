@@ -21,18 +21,21 @@ if (!$reader->checkHeader(['id', 'referencia', 'Model', 'Brand', 'Stock', 'activ
     die('header is not the same than the file');
 }
 $data_file = $reader->read();
+if(!$data_file){
+    die($reader->getLastError());
+}
 $bydemes = new Bydemes($data_file);
 
-//needed to do anything, else nothing is displayed
-$bydemes->processCsv();
+$process = $bydemes->processCsv();
+if(!$process){
+    die('error recovering the products in the database');
+}
 $save = $bydemes->saveProducts();
 //error in the query
 if($save==false){
-    die('<h3>Error obtaining the data</h3>');
+    die('<h3>Error trying to obtain the data</h3>');
 }
 $result = $bydemes->getTable();
-if (!$result) {
-    die('<p>query couldnt be done</p>');
-}
+
 echo '<p>Write today date to update the list</p>';
 echo $result;
