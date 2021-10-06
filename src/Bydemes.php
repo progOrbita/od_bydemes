@@ -292,7 +292,7 @@ class Bydemes
             //obtain product reference
             $csv_ref = $csv_values['reference'];
             //formats values from csv to be compared with the database ones
-            $formatedValues = $this->formatCsv($csv_values);
+            $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
 
             /**
              * False - product isnt added
