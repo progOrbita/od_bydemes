@@ -252,9 +252,9 @@ class Bydemes
     }
     /**
      * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
-     * @return bool|array false if there's an error in the query. Array with the processed information
+     * @return bool false if there's an error in the query. true if there's no errors.
      */
-    public function processCsv()
+    public function processCsv(): bool
     {
 
         //Data = array with the references
