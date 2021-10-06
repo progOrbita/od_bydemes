@@ -88,6 +88,7 @@ class Bydemes
      */
     public function saveProducts()
     {
+
         $products = $this->bydemes_products;
         if ($products === false) {
             $this->queryError = 'Couldnt get the products ';
@@ -149,7 +150,8 @@ class Bydemes
                 if (!property_exists($new_prod, $field)) {
                     continue;
                 }
-                if ($field == 'category') {
+
+                if ($field == 'category' || $field == 'manufacturer_name') {
                     continue;
                 }
                 if ($field === 'quantity' && $ref_exist === true) {
