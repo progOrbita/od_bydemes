@@ -306,49 +306,6 @@ class Bydemes
                 $this->tableData[$csv_ref] = [];
                 $this->tableData[$csv_ref][] = 'exist';
             }
-            foreach ($formatedValues as $field => $value) {
-
-                //stores the values formatted into the array which will be added/saved
-                if ($field != 'manufacturer_name') {
-                    $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
-                    continue;
-                }
-                /**
-                 * Attemps to find the brand/manufacturer, if not found it will create it if write is in the url
-                 */
-                if ($field === 'manufacturer_name') {
-                    if (empty($formatedValues[$field])) {
-                        continue;
-                    }
-
-                    $id_manufacturer = $this->brands[$formatedValues[$field]];
-                    if (empty($id_manufacturer)) {
-                        $write_date = Tools::getValue('write');
-                        //if write isn't set
-                        if ($write_date != date('d_m_Y')) {
-                            $this->tableData[$csv_ref][] = 'brand <b>' . $value . '</b> not found<td>Product will be created</td>';
-                            continue;
-                        }
-                        $this->tableData[$csv_ref][] = 'brand <b>' . $value . '</b> not found creating...<td>Product will be created</td>';
-                        $new_brand = new Manufacturer();
-                        $new_brand->name = $value;
-                        $new_brand->active = 1;
-                        try {
-                            $add_brand = $new_brand->add();
-                        } catch (\Throwable $th) {
-                            $this->tableData[$csv_ref][] = '<b>Error ' . $th->getMessage() . '</b></td>';
-                        }
-                        if (!$add_brand) {
-                            $this->tableData[$csv_ref][] = '<b>Error, brand: ' . $value . ' couldnt be created</b></td>';
-                            continue;
-                        }
-                        $this->brands[$value] = $new_brand->id;
-                        $id_manufacturer = $this->brands[$formatedValues[$field]];
-                    }
-                    $this->insert_csv[$csv_ref]['id_manufacturer'] = $id_manufacturer;
-                    continue;
-                }
-            }
         }
         return true;
     }
@@ -412,6 +369,10 @@ class Bydemes
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
                     break;
+
+                    //obtains manufacturer_id given the name of the brand
+                case 'manufacturer_name':
+                    $csv_values['id_manufacturer'] = $this->find_brand_id($csv_values['reference'], $row_value);
             }
         }
         return $csv_values;
@@ -448,5 +409,42 @@ class Bydemes
         //for styles, in database without spaces.
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
         return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
+    }
+    /**
+     * Obtain manufacturer_id from the name. If no manufacturer_id is found in the database attempts to create it.
+     * @param string $ref product reference, to add information
+     * @param string $brand_name, name of the brand
+     */
+    private function find_brand_id(string $ref, string $brand_name)
+    {
+        if (empty($brand_name)) {
+            return;
+        }
+
+        $id_manufacturer = $this->brands[$brand_name];
+        if (empty($id_manufacturer)) {
+            $write_date = Tools::getValue('write');
+            //if write isn't set
+            if ($write_date != date('d_m_Y')) {
+                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found<td>Product will be created</td>';
+                return;
+            }
+            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...<td>Product will be created</td>';
+            $new_brand = new Manufacturer();
+            $new_brand->name = $brand_name;
+            $new_brand->active = 1;
+            try {
+                $add_brand = $new_brand->add();
+            } catch (\Throwable $th) {
+                $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b></td>';
+            }
+            if (!$add_brand) {
+                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
+                return;
+            }
+            $this->brands[$brand_name] = $new_brand->id;
+            $id_manufacturer = $this->brands[$brand_name];
+        }
+        return $id_manufacturer;
     }
 }
