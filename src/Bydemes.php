@@ -298,7 +298,7 @@ class Bydemes
                         $this->brands[$value] = $new_brand->id;
                         $id_manufacturer = $this->brands[$formatedValues[$field]];
                     }
-                    $this->insert_csv[$csv_ref]['id_manufacturer'] = (string) $id_manufacturer;
+                    $this->insert_csv[$csv_ref]['id_manufacturer'] = $id_manufacturer;
                     continue;
                 }
 
