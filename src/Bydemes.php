@@ -90,7 +90,6 @@ class Bydemes
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
 
         $default_category = "1"; // default category inicio
-        $new_prod = new Product();
 
         //insert_csv is an array with reference as key and the array of values formatted
 
@@ -101,16 +100,16 @@ class Bydemes
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
-            //refresh the Product for each row
-            $new_prod->__construct();
 
             //bool to check if reference exist or no in the database
             $ref_exist = false;
 
             if (isset($products[$ref])) {
                 $id_product = $products[$ref];
-                $new_prod->__construct($id_product);
+                $new_prod = new Product($id_product);
                 $ref_exist = true;
+            } else {
+                $new_prod = new Product();
             }
 
             //prepare the Product, ready to be inserted in the database
