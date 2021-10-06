@@ -314,11 +314,6 @@ class Bydemes
                     continue;
                 }
 
-                if ($field === 'price') {
-                    if ($formatedValues[$field] == '0.000000') {
-                        $this->tableData[$csv_ref][0] .= ' <b>price is emtpy</b>';
-                    }
-                }
                 $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
             }
         }
@@ -338,6 +333,9 @@ class Bydemes
                 case 'price':
                     $float = (float) str_replace(",", ".", $row_value);
                     $csv_values[$header] = number_format($float, 6, '.', '');
+                    if ($csv_values[$header] == '0.000000') {
+                        $this->tableData[$csv_values][0] .= ' <b>price is emtpy</b>';
+                    }
                     break;
 
                     //csv active is false (if 0). Need to convert it
