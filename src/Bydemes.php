@@ -277,13 +277,24 @@ class Bydemes
                     if (empty($formatedValues[$field])) {
                         continue;
                     }
+
                     $id_manufacturer = $this->brands[$formatedValues[$field]];
                     if (empty($id_manufacturer)) {
+                        $write_date = Tools::getValue('write');
+                        //if write isn't set
+                        if ($write_date != date('d_m_Y')) {
+                            $this->tableData[$csv_ref][] = 'brand <b>' . $value . '</b> not found<td>Product will be created</td>';
+                            continue;
+                        }
                         $this->tableData[$csv_ref][] = 'brand <b>' . $value . '</b> not found creating...<td>Product will be created</td>';
                         $new_brand = new Manufacturer();
                         $new_brand->name = $value;
                         $new_brand->active = 1;
-                        $new_brand->add();
+                        $add_brand = $new_brand->add();
+                        if (!$add_brand) {
+                            $this->tableData[$csv_ref][] = '<b>Error, brand: ' . $value . ' couldnt be created</b></td>';
+                            continue;
+                        }
                         $this->brands[$value] = $new_brand->id;
                         $id_manufacturer = $this->brands[$formatedValues[$field]];
                     }
