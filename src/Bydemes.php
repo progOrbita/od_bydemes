@@ -6,8 +6,10 @@ namespace OrbitaDigital\OdBydemes;
 
 use Db;
 use Manufacturer;
+use PrestaShopException;
 use Product;
 use StockAvailable;
+use Tools;
 class Bydemes
 {
     //Data obtained from the csv
@@ -101,7 +103,7 @@ class Bydemes
                 continue;
             }
             if (stristr($this->insert_csv[$ref]['price'], '0.000000')) {
-                $this->tableData[$ref] = ['<b>Price is 0, it wont be added or modified</b>'];
+                $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
                 continue;
             }
 
@@ -130,11 +132,15 @@ class Bydemes
                     $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                     if ($new_prod->$field != $field_value) {
                         $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
-                        if (!$getStock) {
-                            $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                        try {
+                            if (!$getStock) {
+                                $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                            }
+                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                            continue;
+                        } catch (\Throwable $th) {
+                            $this->tableData[$ref][] = 'ERROR <b>' . $th . '</b>';
                         }
-                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                        continue;
                     }
                 }
 
@@ -164,7 +170,6 @@ class Bydemes
                     if (count($this->tableData[$ref]) > 1) {
                         //Add new info in the table
 
-                        $new_prod->id_manufacturer = 'adhsjkashd';
                         //catch the exception if the functions throws an error
                         try {
                             $prod_upd = $new_prod->update();
@@ -187,8 +192,8 @@ class Bydemes
                         }
                         $new_prod->addSupplierReference($bydemes_id, 0);
 
-                    //If it have more than 0, quantity is added (after creating the Product because id is needed)
-                    if ($new_prod->quantity > 0) {
+                        //If it have more than 0, quantity is added (after creating the Product because id is needed)
+                        if ($new_prod->quantity > 0) {
 
                             $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $new_prod->quantity);
                             if (!$add_stock) {
@@ -305,7 +310,7 @@ class Bydemes
                         try {
                             $add_brand = $new_brand->add();
                         } catch (\Throwable $th) {
-                            $this->tableData[$csv_ref][] = '<b>Error ' . $th->getMessage() . ' </b></td>';
+                            $this->tableData[$csv_ref][] = '<b>Error ' . $th->getMessage() . '</b></td>';
                         }
                         if (!$add_brand) {
                             $this->tableData[$csv_ref][] = '<b>Error, brand: ' . $value . ' couldnt be created</b></td>';
