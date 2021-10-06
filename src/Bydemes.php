@@ -100,6 +100,11 @@ class Bydemes
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
+            if(stristr($this->insert_csv[$ref]['price'],'0.000000')){
+                $this->tableData[$ref] = ['<b>Price is 0, wont be added</b>'];
+                continue;
+            }
+
 
             //bool to check if reference exist or no in the database
             $ref_exist = false;
