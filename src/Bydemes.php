@@ -138,13 +138,13 @@ class Bydemes
                     }
                 }
                 if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                    if ($ref_exist) {
-                        foreach ($this->langs as $value) {
+                    foreach ($this->langs as $value) {
+                        if ($ref_exist) {
                             if ($new_prod->$field[$value] != $field_value) {
                                 $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                             }
-                            $new_prod->$field[$value] = $field_value;
                         }
+                        $new_prod->$field[$value] = $field_value;
                     }
                     continue;
                 }
