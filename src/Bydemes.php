@@ -206,12 +206,12 @@ class Bydemes
                     if ($ref_update) {
                         //Add new info in the table
 
-                        //catch the exception if the functions throws an error
+                        //catch the exception if update throws an error
                         try {
                             $prod_upd = $new_prod->update();
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified</b>';
                         } catch (\Throwable $th) {
-                            $this->tableData[$ref][] = 'update info: <b>Error: ' . $th->getMessage() . '</b>';
+                            $this->tableData[$ref][] = 'update info: <b>' . $th->getMessage() . '</b>, it wont be added';
                         }
                         continue;
                     }
@@ -240,7 +240,7 @@ class Bydemes
                         //Add information in the table
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     } catch (\Throwable $th) {
-                        $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>';
+                        $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
                     }
                 }
             }
@@ -452,7 +452,7 @@ class Bydemes
             try {
                 $add_brand = $new_brand->add();
             } catch (\Throwable $th) {
-                $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b></td>';
+                $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added</td>';
             }
             if (!$add_brand) {
                 $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
