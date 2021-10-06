@@ -129,7 +129,10 @@ class Bydemes
                 if ($field == 'quantity' && $ref_exist == true) {
                     $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                     if ($new_prod->$field != $field_value) {
-                        StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
+                        $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
+                        if (!$getStock) {
+                            $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                        }
                         $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                         continue;
                     }
@@ -154,31 +157,38 @@ class Bydemes
             }
 
             //if write is written in the header
-            if (isset($_GET['write'])) {
-                if ($_GET['write'] === date('d_m_Y')) {
-                    if ($ref_exist) {
-                        if (count($this->tableData[$ref]) > 1) {
-                            //Add new info in the table
-                            $new_prod->update();
-                            $this->tableData[$ref][] = 'update info: product was modified';
+            $write_date = Tools::getValue('write');
+            if ($write_date === date('d_m_Y')) {
+                if ($ref_exist) {
+                    if (count($this->tableData[$ref]) > 1) {
+                        //Add new info in the table
+                        $prod_upd = $new_prod->update();
+                        $prod_upd ? $this->tableData[$ref][] = 'update info: product was modified' : $this->tableData[$ref][] = 'update info: <b>Error trying to update the product<b>';
+                        continue;
+                    }
+                    $this->tableData[$ref][] = 'Product up to date';
+                } else {
+                    $new_prod->id_supplier = $bydemes_id;
+                    $new_prod->id_category_default = $default_category;
+
+                    $prod_add = $new_prod->add();
+                    if (!$prod_add) {
+                        $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
+                        continue;
+                    }
+                    $new_prod->addSupplierReference($bydemes_id, 0);
+
+                    //If it have more than 0, quantity is added (after creating the Product because id is needed)
+                    if ($new_prod->quantity > 0) {
+
+                        $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $new_prod->quantity);
+                        if (!$add_stock) {
+                            $this->tableData[$ref][] = 'add info: <b>Error adding stock for ' . $ref . '</b>';
                             continue;
                         }
-                        $this->tableData[$ref][] = 'Product up to date';
-                    } else {
-                        $new_prod->id_supplier = $bydemes_id;
-                        $new_prod->id_category_default = $default_category;
-
-                        $new_prod->add();
-                        $new_prod->addSupplierReference($bydemes_id, 0);
-
-                        //If it have more than 0, quantity is added (after creating the Product because id is needed)
-                        if ($new_prod->quantity > 0) {
-                            $new_prod_id = $new_prod->getIdByReference($new_prod->reference);
-                            StockAvailable::setQuantity($new_prod_id, 0, $new_prod->quantity);
-                        }
-                        //Add information in the table
-                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
+                    //Add information in the table
+                    $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                 }
             }
         }
