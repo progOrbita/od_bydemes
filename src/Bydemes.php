@@ -69,7 +69,7 @@ class Bydemes
     {
         //obtains all the brands from the database
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
-        if($brands_query === false){
+        if ($brands_query === false) {
             return false;
         }
         $brands = [];
@@ -78,7 +78,8 @@ class Bydemes
         }
         return $brands;
     }
-    public function getQueryError(){
+    public function getQueryError()
+    {
         return $this->queryError;
     }
     /**
@@ -93,29 +94,31 @@ class Bydemes
             return false;
         }
 
-        if($this->brands === false){
+        if ($this->brands === false) {
             $this->queryError = 'Couldnt get the brands';
             return false;
         }
 
         $lang_query = Db::getInstance()->executeS('SELECT `iso_code`, `id_lang` FROM `ps_lang`');
-        foreach ($lang_query as $key => $value) {
-            $this->langs[$value['iso_code']] = $value['id_lang'];
-        }
-        if($lang_query === false){
+
+        if ($lang_query === false) {
             $this->queryError = 'Couldnt get the languages';
             return false;
         }
 
+        foreach ($lang_query as $value) {
+            $this->langs[$value['iso_code']] = $value['id_lang'];
+        }
+
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-        if(!$bydemes_id){
+        if (!$bydemes_id) {
             $this->queryError = 'Couldnt get bydemes supplier id';
             return false;
         }
         $default_category = "1"; // default category inicio
 
         //insert_csv is an array with reference as key and the array of values formatted
-        
+
         foreach ($this->insert_csv as $ref => $ref_values) {
 
             //For products that have "no" in their reference or descatalogado in the name, are skipped
@@ -151,6 +154,7 @@ class Bydemes
                 }
                 if ($field === 'quantity' && $ref_exist === true) {
                     $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+
                     if ($new_prod->$field != $field_value) {
                         $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
                         if (!$getStock) {
@@ -190,7 +194,7 @@ class Bydemes
                         //catch the exception if the functions throws an error
                         try {
                             $prod_upd = $new_prod->update();
-                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified';
+                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified</b>';
                         } catch (\Throwable $th) {
                             $this->tableData[$ref][] = 'update info: <b>Error: ' . $th->getMessage() . '</b>';
                         }
