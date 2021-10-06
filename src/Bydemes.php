@@ -306,9 +306,15 @@ class Bydemes
                 $this->tableData[$csv_ref] = [];
                 $this->tableData[$csv_ref][] = 'exist';
             }
-            foreach ($csv_values as $field => $value) {
+            foreach ($formatedValues as $field => $value) {
+
+                //stores the values formatted into the array which will be added/saved
+                if ($field != 'manufacturer_name') {
+                    $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
+                    continue;
+                }
                 /**
-                 * Attemps to find the brand/manufacturer, if not found it will create it
+                 * Attemps to find the brand/manufacturer, if not found it will create it if write is in the url
                  */
                 if ($field === 'manufacturer_name') {
                     if (empty($formatedValues[$field])) {
@@ -342,8 +348,6 @@ class Bydemes
                     $this->insert_csv[$csv_ref]['id_manufacturer'] = $id_manufacturer;
                     continue;
                 }
-
-                $this->insert_csv[$csv_ref][$field] = $formatedValues[$field];
             }
         }
         return true;
