@@ -33,7 +33,7 @@ if(!$process){
 $save = $bydemes->saveProducts();
 //error in the query
 if($save==false){
-    die('<h3>Error trying to obtain the data</h3>');
+    die('<h3>Error trying to obtain the data</h3>'.$bydemes->getQueryError());
 }
 $result = $bydemes->getTable();
 
