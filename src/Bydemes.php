@@ -65,6 +65,10 @@ class Bydemes
         }
         return $bydemes_product;
     }
+    /**
+     * Get all the brands from the database
+     * @return bool|array array with the brands, false if sql have an error.
+     */
     private function getBrands()
     {
         //obtains all the brands from the database
@@ -78,7 +82,11 @@ class Bydemes
         }
         return $brands;
     }
-    public function getQueryError()
+    /**
+     * Get queryError
+     * @return string $queryError Shows the error of the query
+     */
+    public function getQueryError(): string
     {
         return $this->queryError;
     }
@@ -127,11 +135,11 @@ class Bydemes
                 $this->tableData[$ref] = ['<b>this product wont be added</b>'];
                 continue;
             }
+            //For products without price which aren't added in the database
             if (stristr($this->insert_csv[$ref]['price'], '0.000000')) {
                 $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
                 continue;
             }
-
 
             //bool to check if reference exist or no in the database
             $ref_exist = false;
