@@ -132,15 +132,11 @@ class Bydemes
                     $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                     if ($new_prod->$field != $field_value) {
                         $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
-                        try {
-                            if (!$getStock) {
-                                $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
-                            }
-                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                            continue;
-                        } catch (\Throwable $th) {
-                            $this->tableData[$ref][] = 'ERROR <b>' . $th . '</b>';
+                        if (!$getStock) {
+                            $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
                         }
+                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                        continue;
                     }
                 }
 
