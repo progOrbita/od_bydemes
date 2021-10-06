@@ -25,8 +25,8 @@ class Bydemes
     //Reference-id of products included in the database
     private $bydemes_products = [];
 
-    //lang for spanish
-    private $lang_es;
+    //langs
+    private $langs = [];
 
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
@@ -80,7 +80,12 @@ class Bydemes
         if ($products == false) {
             return false;
         }
-        $this->lang_es = Db::getInstance()->getValue('SELECT `id_lang` FROM `ps_lang` WHERE `iso_code` = "es"');
+
+        $lang_query = Db::getInstance()->executeS('SELECT `iso_code`, `id_lang` FROM `ps_lang`');
+        foreach ($lang_query as $key => $value) {
+            $this->langs[$value['iso_code']] = $value['id_lang'];
+        }
+
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
 
         $default_category = "1"; // default category inicio
@@ -126,11 +131,13 @@ class Bydemes
                 }
                 if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                     if ($ref_exist) {
-                        if ($new_prod->$field[$this->lang_es] != $field_value) {
-                            $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
+                        foreach ($this->langs as $value) {
+                            if ($new_prod->$field[$value] != $field_value) {
+                                $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
+                            }
+                            $new_prod->$field[$value] = $field_value;
                         }
                     }
-                    $new_prod->$field[$this->lang_es] = $field_value;
                     continue;
                 }
                 if ($ref_exist) {
