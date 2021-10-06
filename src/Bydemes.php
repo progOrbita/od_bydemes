@@ -30,6 +30,8 @@ class Bydemes
     //langs
     private $langs = [];
 
+    private $queryError = '';
+
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
@@ -67,11 +69,17 @@ class Bydemes
     {
         //obtains all the brands from the database
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
+        if($brands_query === false){
+            return false;
+        }
         $brands = [];
         foreach ($brands_query as $brand) {
             $brands[$brand['name']] = $brand['id_manufacturer'];
         }
         return $brands;
+    }
+    public function getQueryError(){
+        return $this->queryError;
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
@@ -81,6 +89,12 @@ class Bydemes
     {
         $products = $this->bydemes_products;
         if ($products === false) {
+            $this->queryError = 'Couldnt get the products ';
+            return false;
+        }
+
+        if($this->brands === false){
+            $this->queryError = 'Couldnt get the brands';
             return false;
         }
 
@@ -88,13 +102,20 @@ class Bydemes
         foreach ($lang_query as $key => $value) {
             $this->langs[$value['iso_code']] = $value['id_lang'];
         }
+        if($lang_query === false){
+            $this->queryError = 'Couldnt get the languages';
+            return false;
+        }
 
         $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-
+        if(!$bydemes_id){
+            $this->queryError = 'Couldnt get bydemes supplier id';
+            return false;
+        }
         $default_category = "1"; // default category inicio
 
         //insert_csv is an array with reference as key and the array of values formatted
-
+        
         foreach ($this->insert_csv as $ref => $ref_values) {
 
             //For products that have "no" in their reference or descatalogado in the name, are skipped
