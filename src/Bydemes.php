@@ -439,30 +439,39 @@ class Bydemes
      */
     private function find_brand_id(string $ref, string $brand_name)
     {
-        if (empty($brand_name)) {
-            return;
-        }
+        try {
+            if (empty($brand_name)) {
+                return;
+            }
 
-        $id_manufacturer = $this->brands[$brand_name];
-        if (empty($id_manufacturer)) {
-            $write_date = Tools::getValue('write');
-            //if write isn't set
-            if ($write_date != date('d_m_Y')) {
-                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found<td>Product will be created</td>';
-                return;
-            }
-            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...<td>Product will be created</td>';
-            $new_brand = new Manufacturer();
-            $new_brand->name = $brand_name;
-            $new_brand->active = 1;
-            try {
+            $id_manufacturer = $this->brands[$brand_name];
+            if (empty($id_manufacturer)) {
+                $write_date = Tools::getValue('write');
+                //if write isn't set
+                if ($write_date != date('d_m_Y')) {
+                    $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
+                    return;
+                }
+                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
+                $new_brand = new Manufacturer();
+                $new_brand->name = $brand_name;
+                $new_brand->active = 1;
                 $add_brand = $new_brand->add();
-            } catch (\Throwable $th) {
-                $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added</td>';
+
+                if (!$add_brand) {
+                    $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
+                    return;
+                }
+
+                $this->brands[$brand_name] = $new_brand->id;
+                $id_manufacturer = $this->brands[$brand_name];
             }
-            if (!$add_brand) {
-                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
-                return;
+            return $id_manufacturer;
+        } catch (\Throwable $th) {
+            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added</td>';
+        }
+    }
+
             }
 
             $this->brands[$brand_name] = $new_brand->id;
