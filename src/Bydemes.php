@@ -267,23 +267,23 @@ class Bydemes
         <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
         <tbody>';
         $tableBody = '';
-        foreach ($this->tableData as $ref => $value) {
+        foreach ($this->tableData as $ref => $ref_changes) {
             /**
-             * False - product isnt added
+             * False - product isnt added (changes are no-existant)
              * emtpy - Product doesnt have changes
              * no empty - Product have additional information
              */
-            if ($value === false) {
+            if ($ref_changes === false) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
                 continue;
             }
             $tableBody .= '<tr><td>' . $ref . '</td>';
-            if (empty($value)) {
+            if (empty($ref_changes)) {
                 $tableBody .= '<td>Product up to date</td>';
                 continue;
             }
-            foreach ($value as $ref_value) {
-                $tableBody .= '<td>' . $ref_value . '</td>';
+            foreach ($ref_changes as $changed_values) {
+                $tableBody .= '<td>' . $changed_values . '</td>';
             }
             $tableBody .= '</tr>';
         }
