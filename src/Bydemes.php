@@ -134,7 +134,7 @@ class Bydemes
                 continue;
             }
             //For products without price which aren't added in the database
-            if (stristr($this->insert_csv[$ref]['price'], '0.000000')) {
+            if ($this->insert_csv[$ref]['price'] == 0.00) {
                 $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
                 continue;
             }
@@ -195,7 +195,6 @@ class Bydemes
                 }
                 $new_prod->$field = $field_value;
             }
-
             //if write is written in the header
             $write_date = Tools::getValue('write');
             if ($write_date === date('d_m_Y')) {
@@ -334,9 +333,8 @@ class Bydemes
 
                     //replace needed because numbers use . not ,. cast and decimals needed to be compared with the database, 6 digits as prestashop.
                 case 'price':
-                    $float = (float) str_replace(",", ".", $row_value);
-                    $csv_values[$header] = number_format($float, 6, '.', '');
-                    if ($csv_values[$header] == '0.000000') {
+                    $csv_values[$header] = (float) str_replace(",", ".", $row_value);
+                    if ($csv_values[$header] == 0.00) {
                         $this->tableData[$csv_values][0] .= ' <b>price is emtpy</b>';
                     }
                     break;
@@ -352,8 +350,7 @@ class Bydemes
                 case 'height':
                 case 'depth':
                 case 'weight':
-                    $float = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
-                    $csv_values[$header] = number_format($float, 6, '.', '');
+                    $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
                     if (empty($row_value)) {
                         $csv_values[$header] = "0.000000";
                     }

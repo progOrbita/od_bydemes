@@ -30,12 +30,9 @@ $process = $bydemes->processCsv();
 if (!$process) {
     die('error recovering the products in the database');
 }
-try{
+//TODO catch later (caution cuz info is added in the table)
     $bydemes->saveProducts();
-}
-catch (\Throwable $th) {
-    $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
-}
+
 
 $result = $bydemes->getTable();
 
