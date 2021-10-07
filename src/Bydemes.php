@@ -109,123 +109,122 @@ class Bydemes
      */
     public function saveProducts()
     {
+        try {
+            $products = $this->bydemes_products;
 
-        $products = $this->bydemes_products;
+            $lang_query = Language::getIsoIds();
 
-        $lang_query = Language::getIsoIds();
-
-        foreach ($lang_query as $value) {
-            $this->langs[$value['iso_code']] = $value['id_lang'];
-        }
-
-        $default_category = "1"; // default category inicio
-
-        //insert_csv is an array with reference as key and the array of values formatted
-
-        foreach ($this->insert_csv as $ref => $ref_values) {
-
-            //For products that have "no" in their reference or descatalogado in the name, are skipped
-            if (stristr($ref, 'no')) {
-                $this->tableData[$ref] = ['<b>this product wont be added</b>'];
-                continue;
-            }
-            if(stristr($this->insert_csv[$ref]['name'], 'descatalogado')){
-                $this->tableData[$ref] = ['<b>this product is descatalogued, ignored</b>'];
-                continue;
-            }
-            //For products without price which aren't added in the database
-            if ($this->insert_csv[$ref]['price'] == 0.00) {
-                $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
-                continue;
+            foreach ($lang_query as $value) {
+                $this->langs[$value['iso_code']] = $value['id_lang'];
             }
 
-            //bool to check if reference exist or no in the database
-            $ref_exist = false;
-            //check if the product is being updated
-            $ref_update = false;
+            $default_category = "1"; // default category inicio
 
-            if (isset($products[$ref])) {
-                $id_product = $products[$ref];
-                $new_prod = new Product($id_product);
-                $ref_exist = true;
-            } else {
-                $new_prod = new Product();
-            }
+            //insert_csv is an array with reference as key and the array of values formatted
 
-            //prepare the Product, ready to be inserted in the database
-            foreach ($ref_values as $field => $field_value) {
-                //checking if property in the csv exist in the product class
-                if (!property_exists($new_prod, $field)) {
+            foreach ($this->insert_csv as $ref => $ref_values) {
+
+                //For products that have "no" in their reference or descatalogado in the name, are skipped
+                if (stristr($ref, 'no')) {
+                    $this->tableData[$ref] = ['<b>this product wont be added</b>'];
+                    continue;
+                }
+                if (stristr($this->insert_csv[$ref]['name'], 'descatalogado')) {
+                    $this->tableData[$ref] = ['<b>this product is descatalogued, ignored</b>'];
+                    continue;
+                }
+                //For products without price which aren't added in the database
+                if ($this->insert_csv[$ref]['price'] == 0.00) {
+                    $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
                     continue;
                 }
 
-                if ($field == 'category' || $field == 'manufacturer_name') {
-                    continue;
+                //bool to check if reference exist or no in the database
+                $ref_exist = (bool) $this->tableData[$ref];
+
+                //check if the product is being updated
+                $ref_update = false;
+
+                if (isset($products[$ref])) {
+                    $id_product = $products[$ref];
+                    $new_prod = new Product($id_product);
+                } else {
+                    $new_prod = new Product();
                 }
 
-                if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                    foreach ($this->langs as $value) {
-                        if ($ref_exist) {
-                            if ($new_prod->$field[$value] != $field_value) {
-                                $ref_update = true;
-                                $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
-                            }
-                        }
-                        $new_prod->$field[$value] = $field_value;
+                //prepare the Product, ready to be inserted in the database
+                foreach ($ref_values as $field => $field_value) {
+                    //checking if property in the csv exist in the product class
+                    if (!property_exists($new_prod, $field)) {
+                        continue;
                     }
-                    continue;
-                }
-                if ($ref_exist) {
-                    if ($new_prod->$field != $field_value) {
-                        $ref_update = true;
-                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+
+                    if ($field == 'category' || $field == 'manufacturer_name') {
+                        continue;
                     }
-                }
-                $new_prod->$field = $field_value;
-            }
-            //if write is written in the header
-            $write_date = Tools::getValue('write');
-            if ($write_date === date('d_m_Y')) {
-                if ($ref_exist) {
-                    //more than 1 means there's changes in the database
-                    if ($ref_update) {
-                        //Add new info in the table
 
-                        //catch the exception if update throws an error
-                        try {
-                            $prod_upd = $new_prod->update();
-                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified</b>';
-                        } catch (\Throwable $th) {
-                            $this->tableData[$ref][] = 'Update info: <b>' . $th->getMessage() . '</b>, it wont be added';
-                        }
-                        $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
-                        if ($field === 'quantity' && $ref_exist === true) {
-
-                            $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
-
-                            if ($new_prod->$field != $field_value) {
-                                $setStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
-                                if (!$setStock) {
-                                    $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
+                        foreach ($this->langs as $value) {
+                            if ($ref_exist) {
+                                if ($new_prod->$field[$value] != $field_value) {
+                                    $ref_update = true;
+                                    $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                                 }
-                                $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                                continue;
                             }
+                            $new_prod->$field[$value] = $field_value;
                         }
                         continue;
                     }
-                    $this->tableData[$ref][] = 'Product up to date';
-                } else {
-                    $new_prod->id_supplier = $bydemes_id;
-                    $new_prod->id_category_default = $default_category;
+                    if ($ref_exist) {
+                        if ($new_prod->$field != $field_value) {
+                            $ref_update = true;
+                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                        }
+                    }
+                    $new_prod->$field = $field_value;
+                }
+                //if write is written in the header
 
-                    try {
+                $write_date = Tools::getValue('write');
+                if ($write_date === date('d_m_Y')) {
+                    if ($ref_exist) {
+                        //Only update products with one or more changes
+                        if ($ref_update) {
+                            //Add new info in the table
+
+                            $new_prod->id_manufacturer = 'ashdkjasdhas';
+                            //catch the exception if update throws an error
+
+                            $prod_upd = $new_prod->update();
+
+                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
+                            if ($field === 'quantity' && $ref_exist === true) {
+
+                                $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+
+                                if ($new_prod->$field != $field_value) {
+                                    $setStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
+                                    if (!$setStock) {
+                                        $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                                    }
+                                    $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                                    continue;
+                                }
+                            }
+
+                            continue;
+                        }
+                        $this->tableData[$ref][] = 'Product up to date';
+                    } else {
+                        $new_prod->id_supplier = $this->bydemes_id;
+                        $new_prod->id_category_default = $default_category;
+
                         $prod_add = $new_prod->add();
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
                             continue;
                         }
-                        $new_prod->addSupplierReference($bydemes_id, 0);
+                        $new_prod->addSupplierReference($this->bydemes_id, 0);
 
                         //If it have more than 0, quantity is added (after creating the Product because id is needed)
                         if ($new_prod->quantity > 0) {
@@ -238,13 +237,12 @@ class Bydemes
                         }
                         //Add information in the table
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
-                    } catch (\Throwable $th) {
-                        $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
                     }
                 }
             }
+        } catch (\Throwable $th) {
+            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
         }
-        return true;
     }
     /**
      * generates the string of the table with the information obtained from the products and csv proccesing
