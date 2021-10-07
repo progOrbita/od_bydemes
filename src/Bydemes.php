@@ -192,9 +192,6 @@ class Bydemes
                         if ($ref_update) {
                             //Add new info in the table
 
-                            $new_prod->id_manufacturer = 'ashdkjasdhas';
-                            //catch the exception if update throws an error
-
                             $prod_upd = $new_prod->update();
 
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
@@ -241,6 +238,7 @@ class Bydemes
                 }
             }
         } catch (\Throwable $th) {
+            //catch the exception if update throws an error
             $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
         }
     }
@@ -303,10 +301,11 @@ class Bydemes
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
             $csv_ref = $csv_values['reference'];
-            //Assing and formats values from csv so they can be compared with the database ones
+            //Assign and formats values from csv so they can be compared with the database ones
             $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
 
             /**
+             * Stores values to show information in the table
              * False - product isnt added
              * emtpy - Product doesnt have changes
              * no empty - Product have changes
@@ -453,6 +452,7 @@ class Bydemes
                 $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
                 return;
             }
+
             $this->brands[$brand_name] = $new_brand->id;
             $id_manufacturer = $this->brands[$brand_name];
         }
