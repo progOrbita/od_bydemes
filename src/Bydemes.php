@@ -34,6 +34,7 @@ class Bydemes
     //langs
     private $langs = [];
 
+    private $bydemes_id;
     //Message to identify the errors that may happen when calling the database
     private $queryError = '';
 
@@ -50,6 +51,14 @@ class Bydemes
 
         $this->bydemes_products = $this->getBydemesProducts();
         $this->brands = $this->getBrands();
+
+        $this->bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
+        if (!$this->bydemes_id) {
+            die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
+        }
+        if ($this->brands === false) {
+            die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
+        }
     }
     /**
      * Try to obtains the products in the database with reference - id_product
@@ -97,21 +106,11 @@ class Bydemes
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
-     * @return bool false if there's an error in a query
      */
     public function saveProducts()
     {
 
         $products = $this->bydemes_products;
-        if ($products === false) {
-            $this->queryError = 'Couldnt get the products ';
-            return false;
-        }
-
-        if ($this->brands === false) {
-            $this->queryError = 'Couldnt get the brands';
-            return false;
-        }
 
         $lang_query = Language::getIsoIds();
 
@@ -119,11 +118,6 @@ class Bydemes
             $this->langs[$value['iso_code']] = $value['id_lang'];
         }
 
-        $bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-        if (!$bydemes_id) {
-            $this->queryError = 'Couldnt get bydemes supplier id';
-            return false;
-        }
         $default_category = "1"; // default category inicio
 
         //insert_csv is an array with reference as key and the array of values formatted
