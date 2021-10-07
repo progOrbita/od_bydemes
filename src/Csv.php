@@ -9,7 +9,7 @@ use OrbitaDigital\OdBydemes\ReadFiles;
 class Csv extends ReadFiles
 {
 
-    private $url = '';
+
     private $csv_header = [];
     private $parse_header = [];
     private $delimiter = '';
@@ -19,15 +19,17 @@ class Csv extends ReadFiles
 
     /**
      * Constructor
-     * @param array $csv_header Header expected in the csv files
+     * @param string $url url of the file
+     * @param array $parse_header header which will be used to organize the csv
+     * @param string $delimiter delimiter of each value in csv
+     * @param int $length maximum possible length of any row in the csv
      */
     function __construct(string $url, $parse_header, string $delimiter, int $length)
     {
-        $this->url = $url;
-        if (!$this->checkFile($this->url, 'csv')) {
+        if (!$this->checkFile($url, 'csv')) {
             die($this->getLastError());
         }
-        //open archive only once
+        //open archive
         $this->fopened = fopen($url, 'r');
 
         //removing the BOM of csv
@@ -52,6 +54,7 @@ class Csv extends ReadFiles
     {
         $this->csv_header = $header;
     }
+
 
     /**
      * Read a file and returns the array with the data.
@@ -91,31 +94,5 @@ class Csv extends ReadFiles
     public function checkHeader(array $header): bool
     {
         return $header === $this->csv_header;
-    }
-    /**
-     * Read and extract the data from the array of files into an joined array.
-     * @param array $filesData array to extract information
-     * @return bool|array false if there's an error, otherwise an array with the joined information
-     */
-    protected function process(array $filesData)
-    {
-        //If there is no files at all
-        if (empty($filesData)) {
-            $this->lastError = 'csv information not found';
-            return false;
-        }
-
-        //reading each file
-        $joinedData = [];
-
-        //each id_lang key contains the csv with that language csv
-        foreach ($filesData as $id_lang => $lang_csv) {
-            foreach ($lang_csv as $csv_values) {
-                foreach ($csv_values as $header_value => $row_value) {
-                    $joinedData[$csv_values[$id_lang]][$header_value] = $row_value;
-                }
-            }
-        }
-        return $joinedData;
     }
 }
