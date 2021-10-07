@@ -134,7 +134,7 @@ class Bydemes
                     continue;
                 }
                 //For products without price which aren't added in the database
-                if ($this->insert_csv[$ref]['price'] == 0.00) {
+                if ($this->insert_csv[$ref]['price'] === 0.00) {
                     $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
                     continue;
                 }
@@ -175,11 +175,13 @@ class Bydemes
                         }
                         continue;
                     }
+                    //Field are obtained as string, must be casted to float before compare the values
                     if ($field == 'price' || $field == 'width' || $field == 'height' || $field == 'depth' || $field == 'weight') {
                         if ($ref_exist) {
                             $prod_field = (float) $new_prod->$field;
 
-                            if (abs($prod_field - $field_value) < PHP_FLOAT_EPSILON) {
+                            if (abs($prod_field - $field_value) < 'PHP_FLOAT_EPSILON') {
+
                                 $ref_update = true;
                                 $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                             }
@@ -345,9 +347,6 @@ class Bydemes
                     //replace needed because numbers use . not ,. cast and decimals needed to be compared with the database, 6 digits as prestashop.
                 case 'price':
                     $csv_values[$header] = (float) str_replace(",", ".", $row_value);
-                    if ($csv_values[$header] == 0.00) {
-                        $this->tableData[$csv_values][0] .= ' <b>price is emtpy</b>';
-                    }
                     break;
 
                     //csv active is false (if 0). Need to convert it
@@ -362,9 +361,7 @@ class Bydemes
                 case 'depth':
                 case 'weight':
                     $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
-                    if (empty($row_value)) {
-                        $csv_values[$header] = 0.00;
-                    }
+
                     break;
 
                     //low/medium/high values, turned values into numbers.
