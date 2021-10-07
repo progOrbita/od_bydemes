@@ -30,11 +30,8 @@ $process = $bydemes->processCsv();
 if (!$process) {
     die('error recovering the products in the database');
 }
-//TODO catch later (caution cuz info is added in the table)
-    $bydemes->saveProducts();
 
-
-$result = $bydemes->getTable();
+$bydemes->saveProducts();
 
 echo '<p>Write today date to update the list</p>';
-echo $result;
+echo $bydemes->getTable();
