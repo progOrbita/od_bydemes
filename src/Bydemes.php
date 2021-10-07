@@ -166,7 +166,7 @@ class Bydemes
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                         foreach ($this->langs as $value) {
                             if ($ref_exist) {
-                                if ($new_prod->$field[$value] != $field_value) {
+                                if ($new_prod->$field[$value] !== $field_value) {
                                     $ref_update = true;
                                     $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                                 }
@@ -175,14 +175,29 @@ class Bydemes
                         }
                         continue;
                     }
+                    if ($field == 'price' || $field == 'width' || $field == 'height' || $field == 'depth' || $field == 'weight') {
+                        if ($ref_exist) {
+                            $prod_field = (float) $new_prod->$field;
+
+                            if (abs($prod_field - $field_value) < PHP_FLOAT_EPSILON) {
+                                $ref_update = true;
+                                $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                            }
+                        }
+                        $new_prod->$field = $field_value;
+
+                        continue;
+                    }
                     if ($ref_exist) {
-                        if ($new_prod->$field != $field_value) {
+                        if ($new_prod->$field !== $field_value) {
+
                             $ref_update = true;
                             $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                         }
                     }
                     $new_prod->$field = $field_value;
                 }
+
                 //if write is written in the header
 
                 $write_date = Tools::getValue('write');
@@ -191,7 +206,6 @@ class Bydemes
                         //Only update products with one or more changes
                         if ($ref_update) {
                             //Add new info in the table
-
                             $prod_upd = $new_prod->update();
 
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
