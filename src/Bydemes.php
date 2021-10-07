@@ -289,10 +289,7 @@ class Bydemes
                 continue;
             }
             $tableBody .= '<tr><td>' . $ref . '</td>';
-            if (empty($ref_changes)) {
-                $tableBody .= '<td>Product up to date</td>';
-                continue;
-            }
+
             foreach ($ref_changes as $changed_values) {
                 $tableBody .= '<td>' . $changed_values . '</td>';
             }
@@ -366,7 +363,7 @@ class Bydemes
                 case 'weight':
                     $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
                     if (empty($row_value)) {
-                        $csv_values[$header] = "0.000000";
+                        $csv_values[$header] = 0.00;
                     }
                     break;
 
