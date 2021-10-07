@@ -24,7 +24,7 @@ class Csv extends ReadFiles
      * @param string $delimiter delimiter of each value in csv
      * @param int $length maximum possible length of any row in the csv
      */
-    function __construct(string $url, $parse_header, string $delimiter, int $length)
+    function __construct(string $url, array $parse_header, string $delimiter, int $length)
     {
         if (!$this->checkFile($url, 'csv')) {
             die($this->getLastError());
