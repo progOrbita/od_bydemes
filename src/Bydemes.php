@@ -162,18 +162,6 @@ class Bydemes
                 if ($field == 'category' || $field == 'manufacturer_name') {
                     continue;
                 }
-                if ($field === 'quantity' && $ref_exist === true) {
-                    $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
-
-                    if ($new_prod->$field != $field_value) {
-                        $getStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
-                        if (!$getStock) {
-                            $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
-                        }
-                        $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                        continue;
-                    }
-                }
 
                 if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                     foreach ($this->langs as $value) {
@@ -208,7 +196,21 @@ class Bydemes
                             $prod_upd = $new_prod->update();
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : 'Update info: <b>Error, product wasnt modified</b>';
                         } catch (\Throwable $th) {
-                            $this->tableData[$ref][] = 'update info: <b>' . $th->getMessage() . '</b>, it wont be added';
+                            $this->tableData[$ref][] = 'Update info: <b>' . $th->getMessage() . '</b>, it wont be added';
+                        }
+                        $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
+                        if ($field === 'quantity' && $ref_exist === true) {
+
+                            $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+
+                            if ($new_prod->$field != $field_value) {
+                                $setStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
+                                if (!$setStock) {
+                                    $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                                }
+                                $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                                continue;
+                            }
                         }
                         continue;
                     }
