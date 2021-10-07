@@ -216,7 +216,7 @@ class Bydemes
                                 if ($new_prod->$field != $field_value) {
                                     $setStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
                                     if (!$setStock) {
-                                        $this->tableData[$ref][] = '<b>Error, couldnt get the stock of' . $ref . '</b>';
+                                        $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
                                     }
                                     $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
                                     continue;
@@ -229,8 +229,8 @@ class Bydemes
                     } else {
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->id_category_default = $default_category;
-
                         $prod_add = $new_prod->add();
+
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
                             continue;
@@ -262,6 +262,7 @@ class Bydemes
      */
     public function getTable(): string
     {
+
         $tableBase = '<html><head>
             <style>
                 td {
@@ -278,10 +279,10 @@ class Bydemes
         <tbody>';
         $tableBody = '';
         foreach ($this->tableData as $ref => $ref_changes) {
+
             /**
              * False - product isnt added (changes are no-existant)
-             * emtpy - Product doesnt have changes
-             * no empty - Product have additional information
+             * no empty - Product have information
              */
             if ($ref_changes === false) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
