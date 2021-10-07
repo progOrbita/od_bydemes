@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace OrbitaDigital\OdBydemes;
 
 use Db;
+use Language;
 use Manufacturer;
-use PrestaShopException;
 use Product;
 use StockAvailable;
 use Tools;
@@ -113,12 +113,7 @@ class Bydemes
             return false;
         }
 
-        $lang_query = Db::getInstance()->executeS('SELECT `iso_code`, `id_lang` FROM `ps_lang`');
-
-        if ($lang_query === false) {
-            $this->queryError = 'Couldnt get the languages';
-            return false;
-        }
+        $lang_query = Language::getIsoIds();
 
         foreach ($lang_query as $value) {
             $this->langs[$value['iso_code']] = $value['id_lang'];

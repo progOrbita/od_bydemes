@@ -30,11 +30,13 @@ $process = $bydemes->processCsv();
 if (!$process) {
     die('error recovering the products in the database');
 }
-$save = $bydemes->saveProducts();
-//error in the query
-if ($save == false) {
-    die('<h3>Error trying to obtain the data</h3><p>' . $bydemes->getQueryError() . '</p>');
+try{
+    $bydemes->saveProducts();
 }
+catch (\Throwable $th) {
+    $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
+}
+
 $result = $bydemes->getTable();
 
 echo '<p>Write today date to update the list</p>';
