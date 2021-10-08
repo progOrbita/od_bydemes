@@ -26,10 +26,7 @@ if (!$data_file) {
 }
 $bydemes = new Bydemes($data_file);
 
-$process = $bydemes->processCsv();
-if (!$process) {
-    die('error recovering the products in the database');
-}
+$bydemes->processCsv();
 
 $bydemes->saveProducts();
 

@@ -50,6 +50,11 @@ class Bydemes
         $this->csv_data = $csv_data;
 
         $this->bydemes_products = $this->getBydemesProducts();
+        
+        if ($this->bydemes_products === false) {
+            die('<h3>Error trying to obtain the data</h3><p>Couldnt obtain bydemes products</p>');
+        }
+
         $this->brands = $this->getBrands();
 
         $this->bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
@@ -302,15 +307,10 @@ class Bydemes
     }
     /**
      * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
-     * @return bool false if there's an error in the query. true if there's no errors.
      */
     public function processCsv()
     {
-        //Data = array with the references
-        //bydemes_products = array with the bydemes products in the database key = reference
-        if (!$this->bydemes_products) {
-            return false;
-        }
+        
 
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
