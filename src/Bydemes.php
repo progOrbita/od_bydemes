@@ -19,22 +19,24 @@ class Bydemes
     //Data obtained from the csv
     private $csv_data = [];
 
+    //Reference-id of products included in the database
+    private $bydemes_products = [];
+    
+    //Contains the brands from the database
+    private $brands = [];
+    
     //Formatted csv values
     private $insert_csv = [];
 
-    //Contains the brands from the database
-    private $brands = [];
-
-    //Assorted information to be shown to the user
+    //Sorted information by reference that is shown to the user
     private $tableData = [];
-
-    //Reference-id of products included in the database
-    private $bydemes_products = [];
 
     //langs
     private $langs = [];
 
+    //bydemes identifier
     private $bydemes_id;
+
     //Message to identify the errors that may happen when calling the database
     private $queryError = '';
 
@@ -57,13 +59,15 @@ class Bydemes
 
         $this->brands = $this->getBrands();
 
+        if ($this->brands === false) {
+            die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
+        }
+
         $this->bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
         if (!$this->bydemes_id) {
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
         }
-        if ($this->brands === false) {
-            die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
-        }
+
     }
     /**
      * Try to obtains the products in the database with reference - id_product
@@ -71,18 +75,18 @@ class Bydemes
      */
     private function getBydemesProducts()
     {
-        $query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
+        $products_query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
         FROM `ps_product` p 
         INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes"');
 
-        if ($query === false) {
+        if ($products_query === false) {
             return false;
         }
-        $bydemes_product = [];
-        foreach ($query as $value) {
-            $bydemes_product[$value['reference']] = $value['id_product'];
+        $bydemes_products = [];
+        foreach ($products_query as $product) {
+            $bydemes_products[$product['reference']] = $product['id_product'];
         }
-        return $bydemes_product;
+        return $bydemes_products;
     }
     /**
      * Get all the brands from the database
