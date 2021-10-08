@@ -121,10 +121,10 @@ class Bydemes
         try {
             $products = $this->bydemes_products;
 
-            $lang_query = Language::getIsoIds();
+            $lang_query = Language::getLanguages();
 
             foreach ($lang_query as $value) {
-                $this->langs[$value['iso_code']] = $value['id_lang'];
+                $this->langs[$value['name']] = $value['id_lang'];
             }
 
             $default_category = "1"; // default category inicio
@@ -171,13 +171,13 @@ class Bydemes
                     if ($field == 'category' || $field == 'manufacturer_name') {
                         continue;
                     }
-
+                    //Multilanguages fields
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                        foreach ($this->langs as $value) {
+                        foreach ($this->langs as $id_lang => $value) {
                             if ($ref_exist) {
                                 if ($new_prod->$field[$value] !== $field_value) {
                                     $ref_update = true;
-                                    $this->tableData[$ref][] = $field . ' changed: ' . substr($field_value, 0, 200) . ' ...';
+                                    $this->tableData[$ref][] = $field .' in '. $id_lang . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                                 }
                             }
                             $new_prod->$field[$value] = $field_value;
