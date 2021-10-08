@@ -277,30 +277,33 @@ class Bydemes
                     padding: 4px;
                     min-width: 100px;
                 }
+                li{
+                    list-style-type: circle;
+                }
             </style>
         </head>
         <body>
             <h2>List of products</h2>
             <table>
-        <thead><th>Reference</th><th>In database?</th><th>Information</th></thead>
+        <thead><th>Reference</th><th>Information</th></thead>
         <tbody>';
         $tableBody = '';
         foreach ($this->tableData as $ref => $ref_changes) {
-
             /**
              * False - product isnt added (changes are no-existant)
              * no empty - Product have information
              */
             if ($ref_changes === false) {
-                $tableBody .= '<tr><td>' . $ref . '</td><td> Dont exist</td><td>Product will be created</td></tr>';
+                $tableBody .= '<tr><td>' . $ref . '</td><td> Reference not found, it will be created</td></tr>';
                 continue;
             }
-            $tableBody .= '<tr><td>' . $ref . '</td>';
-
+            $tableBody .= '<tr><td>' . $ref . '</td><td>';
             foreach ($ref_changes as $changed_values) {
-                $tableBody .= '<td>' . $changed_values . '</td>';
+                if(!is_array($changed_values)){
+                $tableBody .= '<li>' . $changed_values . '</li>';
+                }
             }
-            $tableBody .= '</tr>';
+            $tableBody .= '</td></tr>';
         }
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
@@ -328,11 +331,9 @@ class Bydemes
                 $this->tableData[$csv_ref] = false;
             } else {
                 //For products already inserted
-                $this->tableData[$csv_ref] = [];
-                $this->tableData[$csv_ref][] = 'exist';
+                $this->tableData[$csv_ref][] = [];
             }
         }
-        return true;
     }
     /**
      * Format the Csv values so they can be compared with the values of Prestashop
@@ -465,7 +466,7 @@ class Bydemes
             }
             return $id_manufacturer;
         } catch (\Throwable $th) {
-            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added</td>';
+            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, brand couldnt be created</td>';
         }
     }
 
