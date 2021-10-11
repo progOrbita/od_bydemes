@@ -225,13 +225,17 @@ class Bydemes
                     }
                     $new_prod->$field = $field_value;
                 }
+                if (!$ref_update) {
+                    $this->tableData[$ref][] = 'Product doesnt have changes';
+                }
 
-                //if write is written in the header
+                //if write with the date is written in the header
 
                 $write_date = Tools::getValue('write');
                 if ($write_date === date('d_m_Y')) {
                     if ($ref_exist) {
                         //Only update products with one or more changes
+
                         if ($ref_update) {
                             //Add new info in the table
                             $prod_upd = $new_prod->update();
@@ -252,7 +256,7 @@ class Bydemes
 
                             continue;
                         }
-                        $this->tableData[$ref][] = 'Product up to date';
+                        
                     } else {
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->id_category_default = $default_category;
