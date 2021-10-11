@@ -187,14 +187,20 @@ class Bydemes
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
-
                     switch ($field) {
                         case 'manufacturer_name':
                         case 'category':
                             break;
 
+                            //once some of them works properly would be added active always. Message is just informative
+                        case 'active':
+                            if ($ref_exist && (int)$new_prod->$field === 0) {
+                                $this->tableData[$ref][] = 'The product is deactivated';
+                            }
+                            break;
+
                         case 'id_manufacturer':
-                            if($ref_exist){
+                            if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
                                     $this->addTableData($ref, $field, $new_prod, $field_value);
                                     $ref_update = true;
@@ -258,7 +264,7 @@ class Bydemes
                             break;
                     }
                 }
-                if (!$ref_update) {
+                if (!$ref_update && $ref_exist) {
                     $this->tableData[$ref][] = 'Product doesnt have changes';
                 }
 
@@ -291,6 +297,7 @@ class Bydemes
                     } else {
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->id_category_default = $default_category;
+                        $new_prod->active = 1;
                         $prod_add = $new_prod->add();
 
                         if (!$prod_add) {
