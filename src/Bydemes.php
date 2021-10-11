@@ -117,6 +117,22 @@ class Bydemes
         return $this->queryError;
     }
     /**
+     * Add information to be shown. Lang is optional if the field is multilanguage
+     * @param string $ref product reference
+     * @param string $field name of the field to be added
+     * @param Product $product information of the product inserted
+     * @param mixed $field_value value of the csv
+     * @param string $lang optional
+     */
+    private function addTableData(string $ref, string $field, Product $product, $field_value, int $lang = null)
+    {
+        if ($lang) {
+            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product->$field[$lang] . '</textarea> to <textarea>' . $field_value . '</textarea>';
+        } else {
+            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product->$field . '</b> to <b>' . $field_value . '</b>';
+        }
+    }
+    /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
      */
     public function saveProducts()
