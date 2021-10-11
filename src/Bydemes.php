@@ -8,6 +8,7 @@ use Db;
 use Language;
 use Manufacturer;
 use Product;
+use SpecificPrice;
 use StockAvailable;
 use Tools;
 
@@ -140,6 +141,20 @@ class Bydemes
     {
         try {
             $products = $this->bydemes_products;
+
+            $discount = new SpecificPrice();
+            $discount->id_shop = 1;
+            $discount->id_currency = 1;
+            $discount->id_country = 0;
+            $discount->id_group = 0;
+            $discount->id_customer = 0;
+            $discount->id_product_attribute = 0;
+            $discount->from_quantity = 1;
+            $discount->reduction = 0.4;
+            $discount->reduction_tax = 1;
+            $discount->reduction_type = 'percentage';
+            $discount->from = date('Y-m-d');
+            $discount->to = date('Y-m-d',strtotime("+15 days"));
 
             $lang_query = Language::getLanguages();
 
@@ -299,6 +314,10 @@ class Bydemes
                         $new_prod->id_category_default = $default_category;
                         $new_prod->active = 1;
                         $prod_add = $new_prod->add();
+   
+                        $discount->id_product = $new_prod->id;
+                        $discount->price = $new_prod->price; //either the price or -1 (which takes current price)
+                        $discount->add();
 
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
@@ -316,7 +335,7 @@ class Bydemes
                             }
                         }
                         //Add information in the table
-                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
+                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added. Discount of 40% for 15 days';
                     }
                 }
             }
