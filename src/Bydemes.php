@@ -213,7 +213,6 @@ class Bydemes
                                 $this->tableData[$ref][] = 'The product is deactivated';
                             }
                             break;
-
                         case 'id_manufacturer':
                             if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
@@ -278,9 +277,14 @@ class Bydemes
                             $new_prod->$field = $field_value;
                             break;
                     }
+                    
+                }
+                if ((int) $new_prod->available_for_order === 0) {
+                    $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
+
                 }
                 if (!$ref_update && $ref_exist) {
-                    $this->tableData[$ref][] = 'Product doesnt have changes';
+                    $this->tableData[$ref][] = 'Product fields doesnt have changes from csv';
                 }
 
                 //if write with the date is written in the header
@@ -371,6 +375,10 @@ class Bydemes
                 li{
                     list-style-type: circle;
                 }
+                textarea{
+                    min-height: 175px;
+                    min-width: 375px;
+                }
             </style>
         </head>
         <body>
@@ -385,7 +393,7 @@ class Bydemes
              * no empty - Product have information
              */
             if ($ref_changes === false) {
-                $tableBody .= '<tr><td>' . $ref . '</td><td> Reference not found, it will be created</td></tr>';
+                $tableBody .= '<tr><td>' . $ref . '</td><td><li> Reference not found, will be created</td></tr>';
                 continue;
             }
             //Products not added or new ones.
