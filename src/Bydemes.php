@@ -170,60 +170,73 @@ class Bydemes
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
-                    if ($field === 'quantity' && $ref_exist === true) {
-                        $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
-                        if ($new_prod->$field !== (int) $field_value) {
-                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                            $ref_update = true;
-                        }
-                        continue;
-                    }
-                    if ($field == 'category' || $field == 'manufacturer_name') {
-                        continue;
-                    }
-                    //Manufacturer cast to integer before comparation
-                    if( $field == 'id_manufacturer'){
-                        if ((int) $new_prod->$field !== $field_value) {
-                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                            $ref_update = true;
-                        }
-                        continue;
-                    }
-                    if ($field == 'description' || $field == 'description_short' || $field == 'name') {
-                        foreach ($this->langs as $id_lang => $value) {
+
+                    switch ($field) {
+                        case 'manufacturer_name':
+                        case 'category':
+                            break;
+
+                        case 'id_manufacturer':
+                            if ((int) $new_prod->$field !== $field_value) {
+                                $this->addTableData($ref, $field, $new_prod, $field_value);
+                                $ref_update = true;
+                            }
+                            break;
+
+                        case 'quantity':
+                            if (!$ref_exist) {
+                                break;
+                            }
+                            $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+                            if ($new_prod->$field !== (int) $field_value) {
+                                $this->addTableData($ref, $field, $new_prod, $field_value);
+                                $ref_update = true;
+                            }
+                            break;
+
+                        case 'price':
+                        case 'width':
+                        case 'height':
+                        case 'depth':
+                        case 'weight':
                             if ($ref_exist) {
-                                if ($new_prod->$field[$value] !== $field_value) {
+                                $prod_field = (float) $new_prod->$field;
+
+                                if (abs($prod_field - $field_value) > 'PHP_FLOAT_EPSILON') {
+
                                     $ref_update = true;
-                                    $this->tableData[$ref][] = $field . ' in ' . $id_lang . ' changed: ' . substr($field_value, 0, 200) . ' ...';
+                                    $this->addTableData($ref, $field, $new_prod, $field_value);
                                 }
                             }
-                            $new_prod->$field[$value] = $field_value;
-                        }
-                        continue;
-                    }
-                    //Field are obtained as string, must be casted to float before compare the values
-                    if ($field == 'price' || $field == 'width' || $field == 'height' || $field == 'depth' || $field == 'weight') {
-                        if ($ref_exist) {
-                            $prod_field = (float) $new_prod->$field;
+                            $new_prod->$field = $field_value;
+                            break;
 
-                            if (abs($prod_field - $field_value) > 'PHP_FLOAT_EPSILON') {
+                        case 'description':
+                        case 'description_short':
+                        case 'name':
+                            foreach ($this->langs as $id_lang) {
 
-                                $ref_update = true;
-                                $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                                if ($ref_exist) {
+                                    if ($new_prod->$field[$id_lang] !== $field_value) {
+                                        $ref_update = true;
+                                        $this->addTableData($ref, $field, $new_prod, $field_value, (int)$id_lang);
+                                    }
+                                }
+                                $new_prod->$field[$id_lang] = $field_value;
                             }
-                        }
-                        $new_prod->$field = $field_value;
+                            break;
 
-                        continue;
-                    }
-                    if ($ref_exist) {
-                        if ($new_prod->$field !== $field_value) {
+                        default:
+                            if ($ref_exist) {
+                                if ($new_prod->$field !== $field_value) {
 
-                            $ref_update = true;
-                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                        }
+                                    $ref_update = true;
+                                    $this->addTableData($ref, $field, $new_prod, $field_value);
+                                }
+                            }
+                            $new_prod->$field = $field_value;
+                            break;
                     }
-                    $new_prod->$field = $field_value;
                 }
                 if (!$ref_update) {
                     $this->tableData[$ref][] = 'Product doesnt have changes';
@@ -255,7 +268,6 @@ class Bydemes
 
                             continue;
                         }
-                        
                     } else {
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->id_category_default = $default_category;
