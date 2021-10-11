@@ -19,6 +19,9 @@ class Bydemes
     //Data obtained from the csv
     private $csv_data = [];
 
+    //admin url for products links
+    private $urlAdm = '';
+
     //Reference-id of products included in the database
     private $bydemes_products = [];
 
@@ -47,9 +50,10 @@ class Bydemes
      * constructor
      * @param array $csv_data data obtained from reading the csv
      */
-    function __construct(array $csv_data)
+    function __construct(array $csv_data, string $urlAdmin)
     {
         $this->csv_data = $csv_data;
+        $this->urlAdm = $urlAdmin;
 
         $this->bydemes_products = $this->getBydemesProducts();
 
