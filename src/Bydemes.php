@@ -180,7 +180,7 @@ class Bydemes
                             if ($ref_exist) {
                                 if ($new_prod->$field[$value] !== $field_value) {
                                     $ref_update = true;
-                                    $this->tableData[$ref][] = $field .' in '. $id_lang . ' changed: ' . substr($field_value, 0, 200) . ' ...';
+                                    $this->tableData[$ref][] = $field . ' in ' . $id_lang . ' changed: ' . substr($field_value, 0, 200) . ' ...';
                                 }
                             }
                             $new_prod->$field[$value] = $field_value;
@@ -192,7 +192,7 @@ class Bydemes
                         if ($ref_exist) {
                             $prod_field = (float) $new_prod->$field;
 
-                            if (abs($prod_field - $field_value) < 'PHP_FLOAT_EPSILON') {
+                            if (abs($prod_field - $field_value) > 'PHP_FLOAT_EPSILON') {
 
                                 $ref_update = true;
                                 $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
@@ -276,7 +276,7 @@ class Bydemes
         $p_controller .= '&token=' . $token;
         $p_controller .= '&id_product=' . (int) $id_product;
         $p_controller .= '&updateproduct';
-        return _PS_BASE_URL_ . __PS_BASE_URI__ . 'admin651fwyyde/' . $p_controller;
+        return _PS_BASE_URL_ . __PS_BASE_URI__ . $this->urlAdm . '/' . $p_controller;
     }
     /**
      * generates the string of the table with the information obtained from the products and csv proccesing
