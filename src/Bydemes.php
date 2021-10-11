@@ -170,7 +170,14 @@ class Bydemes
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
-
+                    if ($field === 'quantity' && $ref_exist === true) {
+                        $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
+                        if ($new_prod->$field !== (int) $field_value) {
+                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                            $ref_update = true;
+                        }
+                        continue;
+                    }
                     if ($field == 'category' || $field == 'manufacturer_name') {
                         continue;
                     }
@@ -223,19 +230,18 @@ class Bydemes
                             $prod_upd = $new_prod->update();
 
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
-                            if ($field === 'quantity' && $ref_exist === true) {
 
-                                $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
 
-                                if ($new_prod->$field != $field_value) {
-                                    $setStock = StockAvailable::setQuantity($id_product, 0, $new_prod->quantity);
-                                    if (!$setStock) {
-                                        $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
-                                    }
-                                    $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
-                                    continue;
+                            $csv_quantity = (int) $this->insert_csv['quantity'];
+                            if ($new_prod->quantity != $csv_quantity) {
+                                $setStock = StockAvailable::setQuantity($id_product, 0, $csv_quantity);
+
+                                if ($setStock === false) {
+                                    $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
                                 }
+                                continue;
                             }
+
 
                             continue;
                         }
