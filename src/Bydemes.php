@@ -21,10 +21,10 @@ class Bydemes
 
     //Reference-id of products included in the database
     private $bydemes_products = [];
-    
+
     //Contains the brands from the database
     private $brands = [];
-    
+
     //Formatted csv values
     private $insert_csv = [];
 
@@ -52,7 +52,7 @@ class Bydemes
         $this->csv_data = $csv_data;
 
         $this->bydemes_products = $this->getBydemesProducts();
-        
+
         if ($this->bydemes_products === false) {
             die('<h3>Error trying to obtain the data</h3><p>Couldnt obtain bydemes products</p>');
         }
@@ -67,7 +67,6 @@ class Bydemes
         if (!$this->bydemes_id) {
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
         }
-
     }
     /**
      * Try to obtains the products in the database with reference - id_product
@@ -267,12 +266,22 @@ class Bydemes
             $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
         }
     }
+    public function createProductLink(int $id_product, string $token)
+    {
+        $p_controller  = 'index.php?controller=AdminProducts';
+        $p_controller .= '&token=' . $token;
+        $p_controller .= '&id_product=' . (int) $id_product;
+        $p_controller .= '&updateproduct';
+        return _PS_BASE_URL_ . __PS_BASE_URI__ . 'admin651fwyyde/' . $p_controller;
+    }
     /**
      * generates the string of the table with the information obtained from the products and csv proccesing
      * @return string string with the table
      */
     public function getTable(): string
     {
+
+        $token = Tools::getAdminTokenLite('AdminProducts');
 
         $tableBase = '<html><head>
             <style>
@@ -301,10 +310,15 @@ class Bydemes
                 $tableBody .= '<tr><td>' . $ref . '</td><td> Reference not found, it will be created</td></tr>';
                 continue;
             }
-            $tableBody .= '<tr><td>' . $ref . '</td><td>';
+            //Products not added or new ones.
+            if (empty((int) $this->bydemes_products[$ref])) {
+                $tableBody .= '<tr><td>' . $ref . '</td><td>';
+            } else {
+                $tableBody .= '<tr><td><a href="' . $this->createProductLink((int) $this->bydemes_products[$ref], $token) . '">' . $ref . '</a></td><td>';
+            }
             foreach ($ref_changes as $changed_values) {
-                if(!is_array($changed_values)){
-                $tableBody .= '<li>' . $changed_values . '</li>';
+                if (!is_array($changed_values)) {
+                    $tableBody .= '<li>' . $changed_values . '</li>';
                 }
             }
             $tableBody .= '</td></tr>';
@@ -317,7 +331,7 @@ class Bydemes
      */
     public function processCsv()
     {
-        
+
 
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
