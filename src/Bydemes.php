@@ -194,10 +194,13 @@ class Bydemes
                             break;
 
                         case 'id_manufacturer':
-                            if ((int) $new_prod->$field !== $field_value) {
-                                $this->addTableData($ref, $field, $new_prod, $field_value);
-                                $ref_update = true;
+                            if($ref_exist){
+                                if ((int) $new_prod->$field !== $field_value) {
+                                    $this->addTableData($ref, $field, $new_prod, $field_value);
+                                    $ref_update = true;
+                                }
                             }
+                            $new_prod->id_manufacturer = $field_value;
                             break;
 
                         case 'quantity':
