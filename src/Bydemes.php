@@ -181,7 +181,14 @@ class Bydemes
                     if ($field == 'category' || $field == 'manufacturer_name') {
                         continue;
                     }
-                    //Multilanguages fields
+                    //Manufacturer cast to integer before comparation
+                    if( $field == 'id_manufacturer'){
+                        if ((int) $new_prod->$field !== $field_value) {
+                            $this->tableData[$ref][] = $field . ' changed: ' . $field_value;
+                            $ref_update = true;
+                        }
+                        continue;
+                    }
                     if ($field == 'description' || $field == 'description_short' || $field == 'name') {
                         foreach ($this->langs as $id_lang => $value) {
                             if ($ref_exist) {
@@ -421,7 +428,7 @@ class Bydemes
 
                     //obtains manufacturer_id given the name of the brand
                 case 'manufacturer_name':
-                    $csv_values['id_manufacturer'] = $this->find_brand_id($csv_values['reference'], $row_value);
+                    $csv_values['id_manufacturer'] = (int) $this->find_brand_id($csv_values['reference'], $row_value);
                     break;
             }
         }
