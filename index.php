@@ -8,11 +8,12 @@ require_once __DIR__ . '/vendor/autoload.php';
 if (!defined('_PS_VERSION_')) {
     require_once '../../config/config.inc.php';
     require_once '../../init.php';
+    
 }
 
 $reader = new Csv(
     'rates/CL131545_product_list.csv',
-    ['id_csv', 'reference', 'model', 'manufacturer_name', 'quantity', 'active', 'price', 'description', 'description_short', 'name', 'category', 'family', 'subfamily', 'compatible_products', 'imageURL', 'EAN', 'length', 'width', 'height', 'depth', 'weight', 'product_url'],
+    ['id_csv', 'reference', 'model', 'manufacturer_name', 'quantity', 'active', 'price', 'description', 'description_short', 'name', 'category', 'family', 'subfamily', 'compatible_products', 'imageURL', 'EAN', 'depth', 'width', 'height', 'volume', 'weight', 'product_url'],
     ',',
     10000
 );
