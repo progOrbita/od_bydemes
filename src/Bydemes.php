@@ -403,6 +403,8 @@ class Bydemes
                     //prestashop keeps <p> in the field. Values aren't decoded
                 case 'description_short':
                     $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
+                    //Products with two spaces instead of one.
+                    $decoded_short_desc = preg_replace('/\s\s/', ' ', $decoded_short_desc);
                     $csv_values[$header] = '<p>' . trim($decoded_short_desc) . '</p>';
                     break;
 
