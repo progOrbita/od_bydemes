@@ -49,6 +49,7 @@ class Bydemes
     /**
      * constructor
      * @param array $csv_data data obtained from reading the csv
+     * @param string $urlAdmin admin url(folder) of Prestashop
      */
     function __construct(array $csv_data, string $urlAdmin)
     {
