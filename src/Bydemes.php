@@ -231,8 +231,7 @@ class Bydemes
 
                 //if write with the date is written in the header
 
-                $write_date = Tools::getValue('write');
-                if ($write_date === date('d_m_Y')) {
+                if (Tools::getValue('write') === date('d_m_Y')) {
                     if ($ref_exist) {
                         //Only update products with one or more changes
 
