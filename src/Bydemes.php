@@ -49,7 +49,7 @@ class Bydemes
 
     //Message to identify the errors that may happen when calling the database
     private $queryError = '';
-    
+
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
@@ -172,18 +172,18 @@ class Bydemes
         $this->discount->to = date('Y-m-d', strtotime("+" . $days . " days"));
     }
 
-    public function setCostPriceMargin(int $percentage){
-        $this->cost_price_margin = (100-$percentage)/100;
-
+    public function setCostPriceMargin(int $percentage)
+    {
+        $this->cost_price_margin = (100 - $percentage) / 100;
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
      */
     public function saveProducts()
     {
+
         try {
             $products = $this->bydemes_products;
-
 
             $lang_query = Language::getLanguages();
 
@@ -243,6 +243,7 @@ class Bydemes
                             }
                             break;
                         case 'id_manufacturer':
+
                             if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
                                     $old_brand = array_search($new_prod->id_manufacturer, $this->brands);
