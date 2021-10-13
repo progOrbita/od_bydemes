@@ -166,7 +166,7 @@ class Bydemes
     private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
     {
         if (Tools::getValue('write') === date('d_m_Y')) {
-            $this->tableData[$ref][] = $field . ' was changed';
+            $this->tableData[$ref][] = strtoupper($field) . ' was changed';
             return;
         }
         if ($lang) {
@@ -278,12 +278,11 @@ class Bydemes
                         case 'depth':
                         case 'weight':
                             if ($ref_exist) {
-                                $prod_field = (float) $new_prod->$field;
 
-                                if (abs($prod_field - $field_value) > 'PHP_FLOAT_EPSILON') {
+                                if (abs((float) $new_prod->$field - $field_value) > 'PHP_FLOAT_EPSILON') {
 
                                     $ref_update = true;
-                                    $this->addTableData($ref, $field, $new_prod->$field, $field_value);
+                                    $this->addTableData($ref, $field, (float) $new_prod->$field, $field_value);
                                 }
                             }
                             $new_prod->$field = $field_value;
