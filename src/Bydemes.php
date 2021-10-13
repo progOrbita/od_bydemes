@@ -165,13 +165,13 @@ class Bydemes
     private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
     {
         if (Tools::getValue('write') === date('d_m_Y')) {
-            $this->tableData[$ref][] = strtoupper($field) . ' was changed';
+            $this->tableData[$ref][] = ucfirst($field) . ' was changed';
             return;
         }
         if ($lang) {
-            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product_field . '</textarea> to <textarea>' . $field_value . '</textarea>';
+            $this->tableData[$ref][] = ucfirst($field) . ' will be changed from: <textarea>' . $product_field . '</textarea> to <textarea>' . $field_value . '</textarea>';
         } else {
-            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
+            $this->tableData[$ref][] = ucfirst($field) . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
         }
     }
 
