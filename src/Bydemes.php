@@ -441,8 +441,11 @@ class Bydemes
                     list-style-type: circle;
                 }
                 textarea{
-                    min-height: 175px;
-                    min-width: 375px;
+                    min-height: 75px;
+                    min-width: 150px;
+                    max-height: 175px;
+                    max-width: 375px;
+                    text-align: justify;
                 }
             </style>
         </head>
