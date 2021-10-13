@@ -354,7 +354,7 @@ class Bydemes
                             continue;
                         }
                     } else {
-                        $new_prod->id_supplier = $this->bydemes_id;
+
                         $new_prod->id_category_default = $default_category;
                         $new_prod->active = 1;
 
