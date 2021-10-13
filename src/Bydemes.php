@@ -250,8 +250,11 @@ class Bydemes
 
                             if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
-                                    $old_brand = array_search($new_prod->id_manufacturer, $this->brands);
-                                    $new_brand = array_search($field_value, $this->brands);
+
+                                    $id_brands = array_flip($this->brands);
+                                    $old_brand = $id_brands[$new_prod->id_manufacturer];
+                                    $new_brand = $id_brands[$field_value];
+
 
                                     $this->addTableData($ref, "manufacturer", $new_brand, $old_brand);
                                     $ref_update = true;
