@@ -132,12 +132,16 @@ class Bydemes
      * @param mixed $field_value value of the csv
      * @param string $lang optional
      */
-    private function addTableData(string $ref, string $field, Product $product, $field_value, int $lang = null)
+    private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
     {
+        if (Tools::getValue('write') === date('d_m_Y')) {
+            $this->tableData[$ref][] = $field . ' was changed';
+            return;
+        }
         if ($lang) {
-            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product->$field[$lang] . '</textarea> to <textarea>' . $field_value . '</textarea>';
+            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product_field . '</textarea> to <textarea>' . $field_value . '</textarea>';
         } else {
-            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product->$field . '</b> to <b>' . $field_value . '</b>';
+            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
         }
     }
     /**
@@ -241,7 +245,10 @@ class Bydemes
                         case 'id_manufacturer':
                             if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
-                                    $this->addTableData($ref, $field, $new_prod, $field_value);
+                                    $old_brand = array_search($new_prod->id_manufacturer, $this->brands);
+                                    $new_brand = array_search($field_value, $this->brands);
+
+                                    $this->addTableData($ref, "manufacturer", $new_brand, $old_brand);
                                     $ref_update = true;
                                 }
                             }
@@ -254,7 +261,7 @@ class Bydemes
                             }
                             $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                             if ($new_prod->$field !== (int) $field_value) {
-                                $this->addTableData($ref, $field, $new_prod, $field_value);
+                                $this->addTableData($ref, $field, $new_prod->$field, $field_value);
                                 $ref_update = true;
                             }
                             break;
@@ -270,7 +277,7 @@ class Bydemes
                                 if (abs($prod_field - $field_value) > 'PHP_FLOAT_EPSILON') {
 
                                     $ref_update = true;
-                                    $this->addTableData($ref, $field, $new_prod, $field_value);
+                                    $this->addTableData($ref, $field, $new_prod->$field, $field_value);
                                 }
                             }
                             $new_prod->$field = $field_value;
@@ -284,7 +291,7 @@ class Bydemes
                                 if ($ref_exist) {
                                     if ($new_prod->$field[$id_lang] !== $field_value) {
                                         $ref_update = true;
-                                        $this->addTableData($ref, $field, $new_prod, $field_value, (int)$id_lang);
+                                        $this->addTableData($ref, $field, $new_prod->$field, $field_value, (int)$id_lang);
                                     }
                                 }
                                 $new_prod->$field[$id_lang] = $field_value;
@@ -296,20 +303,19 @@ class Bydemes
                                 if ($new_prod->$field !== $field_value) {
 
                                     $ref_update = true;
-                                    $this->addTableData($ref, $field, $new_prod, $field_value);
+                                    $this->addTableData($ref, $field, $new_prod->$field, $field_value);
                                 }
                             }
                             $new_prod->$field = $field_value;
                             break;
                     }
-                    
                 }
                 if ((int) $new_prod->available_for_order === 0) {
                     $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
-
                 }
                 if (!$ref_update && $ref_exist) {
-                    $this->tableData[$ref][] = 'Product fields doesnt have changes from csv';
+                    $this->tableData[$ref][] = 'Csv data already updated';
+                }
                 //wholesale price.
 
                 $old_wholesale = (float) $new_prod->wholesale_price;
@@ -344,8 +350,6 @@ class Bydemes
                                 }
                                 continue;
                             }
-
-
                             continue;
                         }
                     } else {
