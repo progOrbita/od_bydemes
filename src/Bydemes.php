@@ -63,6 +63,11 @@ class Bydemes
         $this->csv_data = $csv_data;
         $this->urlAdm = $urlAdmin;
 
+        $this->bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
+        if (!$this->bydemes_id) {
+            die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
+        }
+
         $this->bydemes_products = $this->getBydemesProducts();
 
         if ($this->bydemes_products === false) {
@@ -75,10 +80,6 @@ class Bydemes
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
         }
 
-        $this->bydemes_id = Db::getInstance()->getValue('SELECT `id_supplier` FROM `ps_supplier` WHERE `name` = "bydemes"');
-        if (!$this->bydemes_id) {
-            die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
-        }
     }
 
     /**
@@ -104,8 +105,9 @@ class Bydemes
      */
     private function getBydemesProducts()
     {
-        $products_query = Db::getInstance()->executeS('SELECT DISTINCT p.reference, p.id_product
-        FROM `ps_product_supplier` su, `ps_product` p WHERE su.id_supplier = 1');
+        $products_query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
+        FROM `ps_product` p 
+        INNER JOIN `ps_product_supplier` su ON p.id_product = su.id_product WHERE su.id_supplier = '. $this->bydemes_id);
 
         if ($products_query === false) {
             return false;
