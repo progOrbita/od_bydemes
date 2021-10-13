@@ -393,7 +393,13 @@ class Bydemes
             $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
         }
     }
-    public function createProductLink(int $id_product, string $token)
+    /**
+     * Creates a link for each reference to the product in admin page
+     * @param int $id_product id of the product
+     * @param string $token security token to access
+     * return string link to the admin page
+     */
+    public function createProductLink(int $id_product, string $token): string
     {
         $p_controller  = 'index.php?controller=AdminProducts';
         $p_controller .= '&token=' . $token;
