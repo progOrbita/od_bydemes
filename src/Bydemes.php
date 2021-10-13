@@ -206,16 +206,16 @@ class Bydemes
 
                 //For products that have "no" in their reference or descatalogado in the name, are skipped
                 if (stristr($ref, 'no')) {
-                    $this->tableData[$ref] = ['<b>this product wont be added</b>'];
+                    $this->tableData[$ref] = ['<b>The product wont be added</b>'];
                     continue;
                 }
                 if (stristr($this->insert_csv[$ref]['name'], 'descatalogado')) {
-                    $this->tableData[$ref] = ['<b>this product is descatalogued, ignored</b>'];
+                    $this->tableData[$ref] = ['<b>The product is descatalogued, ignored</b>'];
                     continue;
                 }
                 //For products without price which aren't added in the database
                 if ($this->insert_csv[$ref]['price'] === 0.00) {
-                    $this->tableData[$ref] = ['<b>Price is 0, it wont be added</b>'];
+                    $this->tableData[$ref] = ['<b>Price is empty, the reference wont be added</b>'];
                     continue;
                 }
 
@@ -246,7 +246,7 @@ class Bydemes
                             //once some of them works properly would be added active always. Message is just informative
                         case 'active':
                             if ($ref_exist && (int)$new_prod->$field === 0) {
-                                $this->tableData[$ref][] = 'The product is deactivated';
+                                $this->tableData[$ref][] = '<i>Product deactivated</i>';
                             }
                             break;
                         case 'id_manufacturer':
@@ -339,10 +339,10 @@ class Bydemes
                 }
 
                 if ((int) $new_prod->available_for_order === 0) {
-                    $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
+                    $this->tableData[$ref][] = ' <b>Not available to order</b>';
                 }
                 if (!$ref_update && $ref_exist) {
-                    $this->tableData[$ref][] = 'Csv data is updated';
+                    $this->tableData[$ref][] = ' Up to date';
                 }
                 $csv_quantity = (int) $this->insert_csv[$ref]['quantity'];
 
@@ -354,7 +354,7 @@ class Bydemes
                         if ($ref_update) {
 
                             $prod_upd = $new_prod->update();
-                            $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
+                            $this->tableData[$ref][] = $prod_upd ? 'Update info: The product was modified' : '<b>Fatal error</b>';
                             
                             
                             
