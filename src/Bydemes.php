@@ -80,6 +80,24 @@ class Bydemes
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get bydemes supplier id</p>');
         }
     }
+
+    /**
+     * Get all the brands from the database
+     * @return bool|array array with the brands, false if sql have an error.
+     */
+    private function getBrands()
+    {
+        //obtains all the brands from the database
+        $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
+        if ($brands_query === false) {
+            return false;
+        }
+        $brands = [];
+        foreach ($brands_query as $brand) {
+            $brands[$brand['name']] = $brand['id_manufacturer'];
+        }
+        return $brands;
+    }
     /**
      * Try to obtains the products in the database with reference - id_product
      * @return bool|array array with the references and ids. False if there's an error in the query
@@ -100,23 +118,6 @@ class Bydemes
         return $bydemes_products;
     }
     /**
-     * Get all the brands from the database
-     * @return bool|array array with the brands, false if sql have an error.
-     */
-    private function getBrands()
-    {
-        //obtains all the brands from the database
-        $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
-        if ($brands_query === false) {
-            return false;
-        }
-        $brands = [];
-        foreach ($brands_query as $brand) {
-            $brands[$brand['name']] = $brand['id_manufacturer'];
-        }
-        return $brands;
-    }
-    /**
      * Get queryError
      * @return string $queryError Shows the error of the query
      */
@@ -124,26 +125,7 @@ class Bydemes
     {
         return $this->queryError;
     }
-    /**
-     * Add information to be shown. Lang is optional if the field is multilanguage
-     * @param string $ref product reference
-     * @param string $field name of the field to be added
-     * @param Product $product information of the product inserted
-     * @param mixed $field_value value of the csv
-     * @param string $lang optional
-     */
-    private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
-    {
-        if (Tools::getValue('write') === date('d_m_Y')) {
-            $this->tableData[$ref][] = $field . ' was changed';
-            return;
-        }
-        if ($lang) {
-            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product_field . '</textarea> to <textarea>' . $field_value . '</textarea>';
-        } else {
-            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
-        }
-    }
+
     /**
      * To add discounts
      * @param bool $create false if no discounts are going to be created
@@ -172,6 +154,27 @@ class Bydemes
         $this->discount->to = date('Y-m-d', strtotime("+" . $days . " days"));
     }
 
+    /**
+     * Add information to be shown. Lang is optional if the field is multilanguage
+     * @param string $ref product reference
+     * @param string $field name of the field to be added
+     * @param Product $product information of the product inserted
+     * @param mixed $field_value value of the csv
+     * @param string $lang optional
+     */
+    private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
+    {
+        if (Tools::getValue('write') === date('d_m_Y')) {
+            $this->tableData[$ref][] = $field . ' was changed';
+            return;
+        }
+        if ($lang) {
+            $this->tableData[$ref][] = $field . ' will be changed from: <textarea>' . $product_field . '</textarea> to <textarea>' . $field_value . '</textarea>';
+        } else {
+            $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
+        }
+    }
+    
     public function setCostPriceMargin(int $percentage)
     {
         $this->cost_price_margin = (100 - $percentage) / 100;
@@ -393,6 +396,7 @@ class Bydemes
             $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
         }
     }
+
     /**
      * Creates a link for each reference to the product in admin page
      * @param int $id_product id of the product
@@ -407,6 +411,7 @@ class Bydemes
         $p_controller .= '&updateproduct';
         return _PS_BASE_URL_ . __PS_BASE_URI__ . $this->urlAdm . '/' . $p_controller;
     }
+    
     /**
      * generates the string of the table with the information obtained from the products and csv proccesing
      * @return string string with the table
@@ -463,33 +468,7 @@ class Bydemes
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
     }
-    /**
-     * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
-     */
-    public function processCsv()
-    {
-
-
-        foreach ($this->csv_data as $csv_values) {
-            //obtain product reference
-            $csv_ref = $csv_values['reference'];
-            //Assign and formats values from csv so they can be compared with the database ones
-            $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
-
-            /**
-             * Stores values to show information in the table
-             * False - product isnt added
-             * emtpy - Product doesnt have changes
-             * no empty - Product have changes
-             */
-            if (!isset($this->bydemes_products[$csv_ref])) {
-                $this->tableData[$csv_ref] = false;
-            } else {
-                //For products already inserted
-                $this->tableData[$csv_ref][] = [];
-            }
-        }
-    }
+    
     /**
      * Format the Csv values so they can be compared with the values of Prestashop
      * @param array $csv_values array with the values of the csv of a row (chosed by reference)
@@ -627,11 +606,35 @@ class Bydemes
         }
     }
 
+    /**
+     * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
+     */
+    public function processCsv()
+    {
+
+
+        foreach ($this->csv_data as $csv_values) {
+            //obtain product reference
+            $csv_ref = $csv_values['reference'];
+            //Assign and formats values from csv so they can be compared with the database ones
+            $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
+
+            /**
+             * Stores values to show information in the table
+             * False - product isnt added
+             * emtpy - Product is on database
+             */
+            if (!isset($this->bydemes_products[$csv_ref])) {
+                $this->tableData[$csv_ref] = false;
+            } else {
+                //For products already inserted
+                $this->tableData[$csv_ref][] = [];
+            }
+        }
+    }
+
             }
 
-            $this->brands[$brand_name] = $new_brand->id;
-            $id_manufacturer = $this->brands[$brand_name];
         }
-        return $id_manufacturer;
     }
 }
