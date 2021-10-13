@@ -129,10 +129,10 @@ class Bydemes
     /**
      * Add a discount to new products
      * @param bool $create true if there's a discount, false if no discounts are going to be created
-     * @param string $string_discount discount percentage, default 40%
-     * @param int $days How much last the discount ( default 15 days)
+     * @param string $string_discount discount percentage, default value if not chosen
+     * @param int $days How much last the discount (default value for two weeks)
      */
-    public function addDiscount(bool $create, string $string_discount = "40%", int $days = 15)
+    public function addDiscount(bool $create, string $string_discount = "12%", int $days = 15)
     {
         if ($create === false) {
             return;
@@ -215,7 +215,7 @@ class Bydemes
                 }
                 //For products without price which aren't added in the database
                 if ($this->insert_csv[$ref]['price'] === 0.00) {
-                    $this->tableData[$ref] = ['<b>Price is empty, the reference wont be added</b>'];
+                    $this->tableData[$ref] = ['<b>Price is empty, the product wont be added</b>'];
                     continue;
                 }
 
@@ -578,7 +578,7 @@ class Bydemes
         //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing tags >
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
 
-        //for two spaces, removes one.
+        //If it have two spaces instead of one beetwen words
         $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.

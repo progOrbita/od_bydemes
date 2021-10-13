@@ -30,8 +30,8 @@ $bydemes = new Bydemes($data_file,'admin651fwyyde');
 $bydemes->processCsv();
 
 $bydemes->addDiscount(false);
-$bydemes->setCostPriceMargin(45);
+$bydemes->setCostPriceMargin(40);
 $bydemes->saveProducts();
 
-echo '<p>Write today date to update the list</p>';
+echo '<p>Write today date (dd_mm_yyyy) format, to update the list</p>';
 echo $bydemes->getTable();
