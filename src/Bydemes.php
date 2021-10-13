@@ -41,9 +41,12 @@ class Bydemes
     //bydemes identifier
     private $bydemes_id;
 
+    //Margin from PVP
+    private $cost_price_margin;
+
     //Message to identify the errors that may happen when calling the database
     private $queryError = '';
-
+    
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
@@ -91,6 +94,7 @@ class Bydemes
         foreach ($products_query as $product) {
             $bydemes_products[$product['reference']] = $product['id_product'];
         }
+
         return $bydemes_products;
     }
     /**
@@ -133,6 +137,10 @@ class Bydemes
         } else {
             $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product->$field . '</b> to <b>' . $field_value . '</b>';
         }
+    }
+    public function setCostPriceMargin(int $percentage){
+        $this->cost_price_margin = (100-$percentage)/100;
+
     }
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
@@ -285,6 +293,16 @@ class Bydemes
                 }
                 if (!$ref_update && $ref_exist) {
                     $this->tableData[$ref][] = 'Product fields doesnt have changes from csv';
+                //wholesale price.
+
+                $old_wholesale = (float) $new_prod->wholesale_price;
+                $new_prod->wholesale_price = (float) round($new_prod->price * $this->cost_price_margin, 6);
+
+                if ($ref_exist) {
+                    if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
+                        $ref_update = true;
+                        $this->tableData[$ref][] = 'Update info: wholesale price will be updated from ' . $old_wholesale . ' to ' . $new_prod->wholesale_price;
+                    }
                 }
 
                 //if write with the date is written in the header
