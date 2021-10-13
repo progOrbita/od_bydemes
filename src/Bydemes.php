@@ -341,23 +341,23 @@ class Bydemes
                 if (!$ref_update && $ref_exist) {
                     $this->tableData[$ref][] = 'Csv data is updated';
                 }
+                $csv_quantity = (int) $this->insert_csv[$ref]['quantity'];
 
                 //if write with the date is written in the header
                 if (Tools::getValue('write') === date('d_m_Y')) {
                     if ($ref_exist) {
+                        
                         //Only update products with one or more changes
-
                         if ($ref_update) {
-                            //Add new info in the table
 
                             $prod_upd = $new_prod->update();
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
-
-
-                            $csv_quantity = (int) $this->insert_csv['quantity'];
+                            
+                            
+                            
                             if ($new_prod->quantity != $csv_quantity) {
                                 $setStock = StockAvailable::setQuantity($id_product, 0, $csv_quantity);
-
+                                
                                 if ($setStock === false) {
                                     $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
                                 }
@@ -366,7 +366,7 @@ class Bydemes
                             continue;
                         }
                     } else {
-
+                        //add new products
                         $new_prod->id_category_default = $default_category;
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->active = 1;
@@ -387,11 +387,10 @@ class Bydemes
                         }
                         $new_prod->addSupplierReference($this->bydemes_id, 0);
 
-                        //If it have more than 0, quantity is added (after creating the Product because id is needed)
-                        if ($new_prod->quantity > 0) {
-
-                            $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $new_prod->quantity);
-                            if (!$add_stock) {
+                        //If the product have more than 0 in stock, quantity is added
+                        if ($csv_quantity > 0) {
+                            $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $csv_quantity);
+                            if ($add_stock === false) {
                                 $this->tableData[$ref][] = 'add info: <b>Error adding stock for ' . $ref . '</b>';
                                 continue;
                             }
