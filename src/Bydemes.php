@@ -79,7 +79,6 @@ class Bydemes
         if ($this->brands === false) {
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
         }
-
     }
 
     /**
@@ -107,7 +106,7 @@ class Bydemes
     {
         $products_query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
         FROM `ps_product` p 
-        INNER JOIN `ps_product_supplier` su ON p.id_product = su.id_product WHERE su.id_supplier = '. $this->bydemes_id);
+        INNER JOIN `ps_product_supplier` su ON p.id_product = su.id_product WHERE su.id_supplier = ' . $this->bydemes_id);
 
         if ($products_query === false) {
             return false;
@@ -176,11 +175,12 @@ class Bydemes
             $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
         }
     }
-    
+
     public function setCostPriceMargin(int $percentage)
     {
         $this->cost_price_margin = (100 - $percentage) / 100;
     }
+
     /**
      * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
      */
@@ -297,7 +297,7 @@ class Bydemes
                                 if ($ref_exist) {
                                     if ($new_prod->$field[$id_lang] !== $field_value) {
                                         $ref_update = true;
-                                        $this->addTableData($ref, $field, $new_prod->$field, $field_value, (int)$id_lang);
+                                        $this->addTableData($ref, $field, $new_prod->$field[$id_lang], $field_value, (int)$id_lang);
                                     }
                                 }
                                 $new_prod->$field[$id_lang] = $field_value;
@@ -320,7 +320,7 @@ class Bydemes
                     $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
                 }
                 if (!$ref_update && $ref_exist) {
-                    $this->tableData[$ref][] = 'Csv data already updated';
+                    $this->tableData[$ref][] = 'Csv data is updated';
                 }
                 //wholesale price.
 
@@ -413,7 +413,7 @@ class Bydemes
         $p_controller .= '&updateproduct';
         return _PS_BASE_URL_ . __PS_BASE_URI__ . $this->urlAdm . '/' . $p_controller;
     }
-    
+
     /**
      * generates the string of the table with the information obtained from the products and csv proccesing
      * @return string string with the table
@@ -470,7 +470,7 @@ class Bydemes
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
     }
-    
+
     /**
      * Format the Csv values so they can be compared with the values of Prestashop
      * @param array $csv_values array with the values of the csv of a row (chosed by reference)
