@@ -204,7 +204,7 @@ class Bydemes
 
             foreach ($this->insert_csv as $ref => $ref_values) {
 
-                //For products that have "no" in their reference or descatalogado in the name, are skipped
+                //Products that have "no" in their reference, descatalogado in the name or dont have a price are skipped
                 if (stristr($ref, 'no')) {
                     $this->tableData[$ref] = ['<b>The product wont be added</b>'];
                     continue;
@@ -234,7 +234,7 @@ class Bydemes
 
                 //prepare the Product, ready to be inserted in the database
                 foreach ($ref_values as $field => $field_value) {
-                    //checking if property in the csv exist in the product class
+                    //checking if property in the csv exist in the Product
                     if (!property_exists($new_prod, $field)) {
                         continue;
                     }
@@ -258,7 +258,6 @@ class Bydemes
                                     $old_brand = $id_brands[$new_prod->id_manufacturer];
                                     $new_brand = $id_brands[$field_value];
 
-
                                     $this->addTableData($ref, "manufacturer", $new_brand, $old_brand);
                                     $ref_update = true;
                                 }
@@ -267,6 +266,7 @@ class Bydemes
                             break;
 
                         case 'quantity':
+                            $csv_quantity = (int) $field_value;
                             if (!$ref_exist) {
                                 break;
                             }
@@ -323,7 +323,6 @@ class Bydemes
                 }
 
                 //wholesale price
-
                 $old_wholesale = (float) $new_prod->wholesale_price;
                 $new_prod->wholesale_price = (float) round($new_prod->price * $this->cost_price_margin, 6);
 
@@ -338,13 +337,14 @@ class Bydemes
                     }
                 }
 
+                //message if product isnt available for orders but its in the shop
                 if ((int) $new_prod->available_for_order === 0) {
                     $this->tableData[$ref][] = ' <b>Not available to order</b>';
                 }
+
                 if (!$ref_update && $ref_exist) {
                     $this->tableData[$ref][] = ' Up to date';
                 }
-                $csv_quantity = (int) $this->insert_csv[$ref]['quantity'];
 
                 //if write with the date is written in the header
                 if (Tools::getValue('write') === date('d_m_Y')) {
@@ -416,12 +416,10 @@ class Bydemes
      * @param string $token security token to access
      * return string link to the admin page
      */
-    public function createProductLink(int $id_product, string $token): string
+    private function createProductLink(int $id_product, string $token): string
     {
         $p_controller  = 'index.php?controller=AdminProducts';
-        $p_controller .= '&token=' . $token;
-        $p_controller .= '&id_product=' . (int) $id_product;
-        $p_controller .= '&updateproduct';
+        $p_controller .= '&token=' . $token . '&id_product=' . (int) $id_product . '&updateproduct';
         return _PS_BASE_URL_ . __PS_BASE_URI__ . $this->urlAdm . '/' . $p_controller;
     }
 
@@ -472,6 +470,7 @@ class Bydemes
             if (empty((int) $this->bydemes_products[$ref])) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td>';
             } else {
+                //links for products inserted in Prestashop
                 $tableBody .= '<tr><td><a href="' . $this->createProductLink((int) $this->bydemes_products[$ref], $token) . '">' . $ref . '</a></td><td>';
             }
             foreach ($ref_changes as $changed_values) {
