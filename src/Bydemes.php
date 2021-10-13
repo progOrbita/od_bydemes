@@ -375,6 +375,11 @@ class Bydemes
                         $new_prod->active = 1;
                         $prod_add = $new_prod->add();
 
+                        if (!$prod_add) {
+                            $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
+                            continue;
+                        }
+
                         //if a discount exists
                         if ($this->discount) {
                             $this->discount->id_product = $new_prod->id;
@@ -385,10 +390,6 @@ class Bydemes
                             $this->tableData[$ref][] = 'discount of ' . ($this->discount->reduction * 100) . '% was added for ' . $days . ' days';
                         }
 
-                        if (!$prod_add) {
-                            $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
-                            continue;
-                        }
                         $new_prod->addSupplierReference($this->bydemes_id, 0);
 
                         //If the product have more than 0 in stock, quantity is added
