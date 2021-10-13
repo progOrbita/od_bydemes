@@ -348,27 +348,24 @@ class Bydemes
 
                 //if write with the date is written in the header
                 if (Tools::getValue('write') === date('d_m_Y')) {
-                    if ($ref_exist) {
-                        
-                        //Only update products with one or more changes
-                        if ($ref_update) {
 
-                            $prod_upd = $new_prod->update();
-                            $this->tableData[$ref][] = $prod_upd ? 'Update info: The product was modified' : '<b>Fatal error</b>';
-                            
-                            
-                            
-                            if ($new_prod->quantity != $csv_quantity) {
-                                $setStock = StockAvailable::setQuantity($id_product, 0, $csv_quantity);
-                                
-                                if ($setStock === false) {
-                                    $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
-                                }
-                                continue;
+                    //If product is going to be updated
+                    if ($ref_update) {
+                        $prod_upd = $new_prod->update();
+                        $this->tableData[$ref][] = $prod_upd ? 'Update info: The product was modified' : '<b>Fatal error</b>';
+
+                        if ($new_prod->quantity != $csv_quantity) {
+                            $setStock = StockAvailable::setQuantity($id_product, 0, $csv_quantity);
+
+                            if ($setStock === false) {
+                                $this->tableData[$ref][] = '<b>Error, couldnt set the stock of' . $ref . '</b>';
                             }
                             continue;
                         }
-                    } else {
+                        continue;
+                    }
+                    //If reference doesnt exist
+                    if (!$ref_exist) {
                         //add new products
                         $new_prod->id_category_default = $default_category;
                         $new_prod->id_supplier = $this->bydemes_id;
