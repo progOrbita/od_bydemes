@@ -157,12 +157,12 @@ class Bydemes
     /**
      * Add information to be shown. Lang is optional if the field is multilanguage
      * @param string $ref product reference
-     * @param string $field name of the field to be added
-     * @param Product $product information of the product inserted
-     * @param mixed $field_value value of the csv
-     * @param string $lang optional
+     * @param string $field name of the field to be shown in the table
+     * @param mixed $product_field information of the field of the product
+     * @param mixed $field_value value which expect to update to
+     * @param bool $lang default false, to format long string fields
      */
-    private function addTableData(string $ref, string $field, $product_field, $field_value, int $lang = null)
+    private function addTableData(string $ref, string $field, $product_field, $field_value, bool $lang = false)
     {
         if (Tools::getValue('write') === date('d_m_Y')) {
             $this->tableData[$ref][] = ucfirst($field) . ' was changed';
@@ -293,12 +293,13 @@ class Bydemes
                         case 'description':
                         case 'description_short':
                         case 'name':
-                            foreach ($this->langs as $id_lang) {
+
+                            foreach ($this->langs as $lang_name => $id_lang) {
 
                                 if ($ref_exist) {
                                     if ($new_prod->$field[$id_lang] !== $field_value) {
                                         $ref_update = true;
-                                        $this->addTableData($ref, $field, $new_prod->$field[$id_lang], $field_value, (int)$id_lang);
+                                        $this->addTableData($ref, $field . ' in ' . $lang_name, $new_prod->$field[$id_lang], $field_value, true);
                                     }
                                 }
                                 $new_prod->$field[$id_lang] = $field_value;
