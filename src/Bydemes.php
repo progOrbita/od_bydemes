@@ -326,7 +326,11 @@ class Bydemes
                 if ($ref_exist) {
                     if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
                         $ref_update = true;
-                        $this->tableData[$ref][] = 'Wholesale price will be updated from <b>' . $old_wholesale . '</b> to <b>' . $new_prod->wholesale_price . '</b>';
+                        if (Tools::getValue('write') === date('d_m_Y')) {
+                            $this->tableData[$ref][] = 'Wholesale price was changed';
+                        } else {
+                            $this->addTableData($ref, "wholesale price", $old_wholesale, $new_prod->wholesale_price);
+                        }
                     }
                 }
 
