@@ -127,12 +127,12 @@ class Bydemes
     }
 
     /**
-     * To add discounts
-     * @param bool $create false if no discounts are going to be created
-     * @param string $flat_discount default percentage 40%
+     * Add a discount to new products
+     * @param bool $create true if there's a discount, false if no discounts are going to be created
+     * @param string $string_discount discount percentage, default 40%
      * @param int $days How much last the discount ( default 15 days)
      */
-    public function addDiscount(bool $create = true, string $string_discount = "40%", int $days = 15)
+    public function addDiscount(bool $create, string $string_discount = "40%", int $days = 15)
     {
         if ($create === false) {
             return;
@@ -174,14 +174,17 @@ class Bydemes
             $this->tableData[$ref][] = ucfirst($field) . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
         }
     }
-
+    /**
+     * Margin price to be reduced from PVP to obtain price cost.
+     * @param int $percentage flat percentage to be reduced from product PVP.
+     */
     public function setCostPriceMargin(int $percentage)
     {
         $this->cost_price_margin = (100 - $percentage) / 100;
     }
 
     /**
-     * Attempts to add products in the database if references doesnt exist or update them with new values from the csv
+     * Attempts to add products in the database if references doesnt exist or update them with values from the csv if they differs.
      */
     public function saveProducts()
     {
@@ -372,9 +375,10 @@ class Bydemes
                         $new_prod->active = 1;
                         $prod_add = $new_prod->add();
 
+                        //if a discount exists
                         if ($this->discount) {
                             $this->discount->id_product = $new_prod->id;
-                            $this->discount->price = $new_prod->price; //either the price of the product which shouldn't change or -1 (which takes current price)
+                            $this->discount->price = $new_prod->price;
                             $this->discount->add();
                             $days = round((strtotime($this->discount->to) - strtotime($this->discount->from)) / 86400);
 
