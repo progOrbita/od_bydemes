@@ -29,6 +29,7 @@ $bydemes = new Bydemes($data_file,'admin651fwyyde');
 
 $bydemes->processCsv();
 
+$bydemes->addDiscount(false);
 $bydemes->setCostPriceMargin(45);
 $bydemes->saveProducts();
 

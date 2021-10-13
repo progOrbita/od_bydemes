@@ -41,6 +41,9 @@ class Bydemes
     //bydemes identifier
     private $bydemes_id;
 
+    //to create a discount
+    private $discount;
+
     //Margin from PVP
     private $cost_price_margin;
 
@@ -138,6 +141,34 @@ class Bydemes
             $this->tableData[$ref][] = $field . ' will be updated from: <b>' . $product->$field . '</b> to <b>' . $field_value . '</b>';
         }
     }
+    /**
+     * To add discounts
+     * @param bool $create false if no discounts are going to be created
+     * @param string $flat_discount default percentage 40%
+     * @param int $days How much last the discount ( default 15 days)
+     */
+    public function addDiscount(bool $create = true, string $string_discount = "40%", int $days = 15)
+    {
+        if ($create === false) {
+            return;
+        }
+        preg_match('/\d+/', $string_discount, $flat_discount);
+
+        $this->discount = new SpecificPrice();
+        $this->discount->id_shop = 1;
+        $this->discount->id_currency = 1;
+        $this->discount->id_country = 0;
+        $this->discount->id_group = 0;
+        $this->discount->id_customer = 0;
+        $this->discount->id_product_attribute = 0;
+        $this->discount->from_quantity = 1;
+        $this->discount->reduction_tax = 1;
+        $this->discount->reduction_type = 'percentage';
+        $this->discount->reduction = ((float)$flat_discount[0] / 100);
+        $this->discount->from = date('Y-m-d');
+        $this->discount->to = date('Y-m-d', strtotime("+" . $days . " days"));
+    }
+
     public function setCostPriceMargin(int $percentage){
         $this->cost_price_margin = (100-$percentage)/100;
 
@@ -150,19 +181,6 @@ class Bydemes
         try {
             $products = $this->bydemes_products;
 
-            $discount = new SpecificPrice();
-            $discount->id_shop = 1;
-            $discount->id_currency = 1;
-            $discount->id_country = 0;
-            $discount->id_group = 0;
-            $discount->id_customer = 0;
-            $discount->id_product_attribute = 0;
-            $discount->from_quantity = 1;
-            $discount->reduction = 0.4;
-            $discount->reduction_tax = 1;
-            $discount->reduction_type = 'percentage';
-            $discount->from = date('Y-m-d');
-            $discount->to = date('Y-m-d',strtotime("+15 days"));
 
             $lang_query = Language::getLanguages();
 
@@ -335,11 +353,16 @@ class Bydemes
                         $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->id_category_default = $default_category;
                         $new_prod->active = 1;
+
                         $prod_add = $new_prod->add();
-   
-                        $discount->id_product = $new_prod->id;
-                        $discount->price = $new_prod->price; //either the price or -1 (which takes current price)
-                        $discount->add();
+                        if ($this->discount) {
+                            $this->discount->id_product = $new_prod->id;
+                            $this->discount->price = $new_prod->price; //either the price of the product which shouldn't change or -1 (which takes current price)
+                            $this->discount->add();
+                            $days = round((strtotime($this->discount->to) - strtotime($this->discount->from)) / 86400);
+
+                            $this->tableData[$ref][] = 'discount of ' . ($this->discount->reduction * 100) . '% was added for ' . $days . ' days';
+                        }
 
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
@@ -357,7 +380,7 @@ class Bydemes
                             }
                         }
                         //Add information in the table
-                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added. Discount of 40% for 15 days';
+                        $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
                 }
             }
