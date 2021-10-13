@@ -315,13 +315,8 @@ class Bydemes
                             break;
                     }
                 }
-                if ((int) $new_prod->available_for_order === 0) {
-                    $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
-                }
-                if (!$ref_update && $ref_exist) {
-                    $this->tableData[$ref][] = 'Csv data is updated';
-                }
-                //wholesale price.
+
+                //wholesale price
 
                 $old_wholesale = (float) $new_prod->wholesale_price;
                 $new_prod->wholesale_price = (float) round($new_prod->price * $this->cost_price_margin, 6);
@@ -329,20 +324,26 @@ class Bydemes
                 if ($ref_exist) {
                     if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
                         $ref_update = true;
-                        $this->tableData[$ref][] = 'Update info: wholesale price will be updated from ' . $old_wholesale . ' to ' . $new_prod->wholesale_price;
+                        $this->tableData[$ref][] = 'Wholesale price will be updated from <b>' . $old_wholesale . '</b> to <b>' . $new_prod->wholesale_price.'</b>';
                     }
                 }
 
+                if ((int) $new_prod->available_for_order === 0) {
+                    $this->tableData[$ref][] = ' <b>Product isnt available to order</b>';
+                }
+                if (!$ref_update && $ref_exist) {
+                    $this->tableData[$ref][] = 'Csv data is updated';
+                }
+                
                 //if write with the date is written in the header
-
                 if (Tools::getValue('write') === date('d_m_Y')) {
                     if ($ref_exist) {
                         //Only update products with one or more changes
 
                         if ($ref_update) {
                             //Add new info in the table
+                            
                             $prod_upd = $new_prod->update();
-
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
 
 
