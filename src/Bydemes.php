@@ -86,9 +86,8 @@ class Bydemes
      */
     private function getBydemesProducts()
     {
-        $products_query = Db::getInstance()->executeS('SELECT p.reference, p.id_product
-        FROM `ps_product` p 
-        INNER JOIN `ps_supplier` su ON p.id_supplier = su.id_supplier WHERE su.name = "bydemes"');
+        $products_query = Db::getInstance()->executeS('SELECT DISTINCT p.reference, p.id_product
+        FROM `ps_product_supplier` su, `ps_product` p WHERE su.id_supplier = 1');
 
         if ($products_query === false) {
             return false;
