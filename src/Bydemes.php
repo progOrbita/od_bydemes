@@ -115,7 +115,6 @@ class Bydemes
         foreach ($products_query as $product) {
             $bydemes_products[$product['reference']] = $product['id_product'];
         }
-
         return $bydemes_products;
     }
     /**
@@ -324,7 +323,7 @@ class Bydemes
                 if ($ref_exist) {
                     if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
                         $ref_update = true;
-                        $this->tableData[$ref][] = 'Wholesale price will be updated from <b>' . $old_wholesale . '</b> to <b>' . $new_prod->wholesale_price.'</b>';
+                        $this->tableData[$ref][] = 'Wholesale price will be updated from <b>' . $old_wholesale . '</b> to <b>' . $new_prod->wholesale_price . '</b>';
                     }
                 }
 
@@ -334,7 +333,7 @@ class Bydemes
                 if (!$ref_update && $ref_exist) {
                     $this->tableData[$ref][] = 'Csv data is updated';
                 }
-                
+
                 //if write with the date is written in the header
                 if (Tools::getValue('write') === date('d_m_Y')) {
                     if ($ref_exist) {
@@ -342,7 +341,7 @@ class Bydemes
 
                         if ($ref_update) {
                             //Add new info in the table
-                            
+
                             $prod_upd = $new_prod->update();
                             $this->tableData[$ref][] = $prod_upd ? 'Update info: product was modified' : '<b>Fatal error</b>';
 
@@ -361,9 +360,10 @@ class Bydemes
                     } else {
 
                         $new_prod->id_category_default = $default_category;
+                        $new_prod->id_supplier = $this->bydemes_id;
                         $new_prod->active = 1;
-
                         $prod_add = $new_prod->add();
+
                         if ($this->discount) {
                             $this->discount->id_product = $new_prod->id;
                             $this->discount->price = $new_prod->price; //either the price of the product which shouldn't change or -1 (which takes current price)
