@@ -571,10 +571,13 @@ class Bydemes
         //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing tags >
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
 
+        //for two spaces, removes one.
+        $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
         return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
     }
+
     /**
      * Obtain manufacturer_id from the name. If no manufacturer_id is found in the database attempts to create it.
      * @param string $ref product reference, to add information
