@@ -265,7 +265,7 @@ class Bydemes
                                     $old_brand = $id_brands[$new_prod->id_manufacturer];
                                     $new_brand = $id_brands[$field_value];
 
-                                    $this->addTableData($ref, "manufacturer", $new_brand, $old_brand);
+                                    $this->addTableData($ref, "manufacturer", $old_brand, $new_brand);
                                     $ref_update = true;
                                 }
                             }
