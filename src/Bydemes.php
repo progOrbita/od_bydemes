@@ -345,8 +345,46 @@ class Bydemes
                 }
 
                 //message if product isnt available for orders but its in the shop
+                if($new_prod->visibility !== 'both'){
+                    switch($new_prod->visibility){
+                        case "catalog":
+                            $this->tableData[$ref][] = ' <i>Product shows in the catalog and searchs</i>';
+                            break;
+
+                        case "search":
+                            $this->tableData[$ref][] = ' <i>Product shows only in searchs</i>';
+                            break;
+
+                        case "none":
+                            $this->tableData[$ref][] = ' <i>Product is hidden from the shop</i>';
+                            break;
+
+                    }
+                }
+                if((int) $new_prod->show_condition === 1){
+                    $this->tableData[$ref][] = ' <i>Product condition displayed in the shop</i>';
+
+                }
+                if($new_prod->condition !== "new"){
+                    switch($new_prod->condition){
+                        case "used":
+                            $this->tableData[$ref][] = ' <i>Used product</i>';
+                            break;
+
+                        case "refurbished":
+                            $this->tableData[$ref][] = ' <i>Product refurbished</i>';
+                            break;
+                    }
+                }
+                
+                if((int) $new_prod->online_only === 0){
+                    $this->tableData[$ref][] = ' <i>Product only available in the web</i>';
+                }
                 if ((int) $new_prod->available_for_order === 0) {
                     $this->tableData[$ref][] = ' <b>Not available to order</b>';
+                }
+                if((int) $new_prod->show_price === 0){
+                    $this->tableData[$ref][] = ' <i>Price is hidden in the shop</i>';
                 }
 
                 if (!$ref_update && $ref_exist) {
