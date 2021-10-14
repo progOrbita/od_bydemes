@@ -198,8 +198,8 @@ class Bydemes
                 $this->langs[$value['name']] = $value['id_lang'];
             }
 
-            $default_category = "1"; // default category inicio
-
+            $default_category = 1; // default category inicio
+            $i = 1;
             //insert_csv is an array with reference as key and the array of values formatted
 
             foreach ($this->insert_csv as $ref => $ref_values) {
@@ -414,8 +414,9 @@ class Bydemes
                         //add new products
                         $new_prod->id_category_default = $default_category;
                         $new_prod->id_supplier = $this->bydemes_id;
-                        $new_prod->active = 1;
+                        
                         $prod_add = $new_prod->add();
+
 
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
@@ -446,6 +447,7 @@ class Bydemes
                         $this->tableData[$ref][] = 'add info: product with reference ' . $ref . ' was added';
                     }
                 }
+                $i++;
             }
         } catch (\Throwable $th) {
             //catch the exception if update throws an error
@@ -542,11 +544,6 @@ class Bydemes
                     $csv_values[$header] = (float) str_replace(",", ".", $row_value);
                     break;
 
-                    //csv active is false (if 0). Need to convert it
-                case 'active':
-                    $row_value === 'False' ? $csv_values[$header] = "0" : $csv_values[$header] = "1";
-                    break;
-
                     //For dimensions, changes letters to 0, removes lots of empty space and needs 6 digits like prestashop
                 case 'width':
                 case 'length':
@@ -554,7 +551,6 @@ class Bydemes
                 case 'depth':
                 case 'weight':
                     $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
-
                     break;
 
                     //low/medium/high values, turned values into numbers.
