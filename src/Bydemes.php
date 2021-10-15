@@ -565,7 +565,7 @@ class Bydemes
                     $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
                     break;
 
-                    //prestashop keeps <p> in the field. Values aren't decoded
+                    //prestashop keeps <p> in the field. Values are encoded
                 case 'description_short':
                     $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
                     //Products with two spaces instead of one.
@@ -578,18 +578,16 @@ class Bydemes
                     $csv_values[$header] = $this->process_desc($row_value);
                     $end = '';
                     //If there's more than one paragraf, need to add a line jump to each one
-                    if (preg_match('/<\/p><p>/', $csv_values[$header])) {
-                        $parafs = preg_split('/<\/p>/', $csv_values[$header]);
-                        unset($parafs[count($parafs) - 1]);
-                        foreach ($parafs as $paraf_number => $paraf_value) {
-                            //For last paragraf, dont add the line jump
-                            if ($paraf_number === count($parafs) - 1) {
-                                $end .= $paraf_value . '</p>';
-                                continue;
-                            }
-                            $end .= $paraf_value . '</p>
+                    if (preg_match_all('/<p>(.+)<\/p>/U', $csv_values[$header], $match)) {
+
+                            foreach ($match[0] as $paraf_number => $paraf_value) {
+                                if ($paraf_number === count($match[0]) - 1) {
+                                    $end .= $paraf_value;
+                                    continue;
+                                }
+                                $end .= $paraf_value . '
 ';
-                        }
+                            }
                         $csv_values[$header] = $end;
                     }
                     break;
@@ -628,14 +626,16 @@ class Bydemes
         $utfText = html_entity_decode($desc_processed, ENT_QUOTES, 'UTF-8');
         //for &, is decodified to &amp; in prestashop
         $utfText = preg_replace('/&/', "&amp;", $utfText);
-        //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing tags >
+        //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing open/close tags < and >
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
+        //For lesser than
+        $utfText = preg_replace('/\s<(?=\d+)/', "&lt;", $utfText);
 
         //If it have two spaces instead of one beetwen words
         $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
-        return preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText);
+        return Tools::purifyHTML(preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText));
     }
 
     /**
