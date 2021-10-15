@@ -635,9 +635,9 @@ class Bydemes
 
             $id_manufacturer = $this->brands[$brand_name];
             if (empty($id_manufacturer)) {
-                $write_date = Tools::getValue('write');
+
                 //if write isn't set
-                if ($write_date != date('d_m_Y')) {
+                if (Tools::getValue('write') !== date('d_m_Y')) {
                     $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
                     return;
                 }
