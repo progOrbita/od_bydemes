@@ -53,6 +53,7 @@ class Bydemes
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
+    private $update;
     /**
      * constructor
      * @param array $csv_data data obtained from reading the csv
@@ -79,6 +80,7 @@ class Bydemes
         if ($this->brands === false) {
             die('<h3>Error trying to obtain the data</h3><p>Couldnt get the brands</p>');
         }
+        $this->update = Tools::getValue('write') === date('d_m_Y');
     }
 
     /**
@@ -164,7 +166,7 @@ class Bydemes
      */
     private function addTableData(string $ref, string $field, $product_field, $field_value, bool $lang = false)
     {
-        if (Tools::getValue('write') === date('d_m_Y')) {
+        if ($this->update) {
             $this->tableData[$ref][] = ucfirst($field) . ' was changed';
             return;
         }
@@ -335,7 +337,7 @@ class Bydemes
                 if ($ref_exist) {
                     if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
                         $ref_update = true;
-                        if (Tools::getValue('write') === date('d_m_Y')) {
+                        if ($this->update) {
                             $this->tableData[$ref][] = 'Wholesale price was changed';
                         } else {
                             $this->addTableData($ref, "wholesale price", $old_wholesale, $new_prod->wholesale_price);
@@ -357,7 +359,6 @@ class Bydemes
                         case "none":
                             $this->tableData[$ref][] = ' <i>Product is hidden from the shop</i>';
                             break;
-
                     }
                 }
                 if ((int) $new_prod->show_condition === 1) {
@@ -389,8 +390,8 @@ class Bydemes
                     $this->tableData[$ref][] = ' Up to date';
                 }
 
-                //if write with the date is written in the header
-                if (Tools::getValue('write') === date('d_m_Y')) {
+                //if data is going to update
+                if ($this->update) {
 
                     //If product is going to be updated
                     if ($ref_update) {
@@ -595,7 +596,7 @@ class Bydemes
 
                     //obtains manufacturer_id given the name of the brand
                 case 'manufacturer_name':
-                    $csv_values['id_manufacturer'] = (int) $this->find_brand_id($csv_values['reference'], $row_value);
+                    $csv_values['id_manufacturer'] = (int) $this->check_brand_id($csv_values['reference'], $row_value, $this->update);
                     break;
             }
         }
@@ -642,38 +643,33 @@ class Bydemes
      * @param string $ref product reference, to add information
      * @param string $brand_name, name of the brand
      */
-    private function find_brand_id(string $ref, string $brand_name)
+    private function check_brand_id(string $ref, string $brand_name, bool $update)
     {
-        try {
-            if (empty($brand_name)) {
+        if (empty($brand_name)) {
+            return;
+        }
+
+        $id_manufacturer = $this->brands[$brand_name];
+        if (empty($id_manufacturer)) {
+
+            //if write isn't set
+            if (!$update) {
+                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
+                return;
+            }
+            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
+            $new_brand = new Manufacturer();
+            $new_brand->name = $brand_name;
+            $new_brand->active = 1;
+            $add_brand = $new_brand->add();
+
+            if (!$add_brand) {
+                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
                 return;
             }
 
+            $this->brands[$brand_name] = $new_brand->id;
             $id_manufacturer = $this->brands[$brand_name];
-            if (empty($id_manufacturer)) {
-
-                //if write isn't set
-                if (Tools::getValue('write') !== date('d_m_Y')) {
-                    $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
-                    return;
-                }
-                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
-                $new_brand = new Manufacturer();
-                $new_brand->name = $brand_name;
-                $new_brand->active = 1;
-                $add_brand = $new_brand->add();
-
-                if (!$add_brand) {
-                    $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
-                    return;
-                }
-
-                $this->brands[$brand_name] = $new_brand->id;
-                $id_manufacturer = $this->brands[$brand_name];
-            }
-            return $id_manufacturer;
-        } catch (\Throwable $th) {
-            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, brand couldnt be created</td>';
         }
     }
 
