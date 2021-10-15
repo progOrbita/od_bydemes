@@ -245,13 +245,12 @@ class Bydemes
 
                             //once some of them works properly would be added active always. Message is just informative
                         case 'active':
-                            $active = ($i+1)%2; //active even and deactive odd csv references
+                            $active = ($i + 1) % 2; //active even and deactive odd csv references
 
                             if ($ref_exist && (int)$new_prod->$field !== $active) {
                                 $new_prod->active = $active;
-                                
                             }
-                            
+
                             if ($ref_exist && (int)$new_prod->$field === 0) {
                                 $this->tableData[$ref][] = '<i>Product deactivated</i>';
                             }
@@ -345,8 +344,8 @@ class Bydemes
                 }
 
                 //message if product isnt available for orders but its in the shop
-                if($new_prod->visibility !== 'both'){
-                    switch($new_prod->visibility){
+                if ($new_prod->visibility !== 'both') {
+                    switch ($new_prod->visibility) {
                         case "catalog":
                             $this->tableData[$ref][] = ' <i>Product shows in the catalog and searchs</i>';
                             break;
@@ -361,12 +360,11 @@ class Bydemes
 
                     }
                 }
-                if((int) $new_prod->show_condition === 1){
+                if ((int) $new_prod->show_condition === 1) {
                     $this->tableData[$ref][] = ' <i>Product condition displayed in the shop</i>';
-
                 }
-                if($new_prod->condition !== "new"){
-                    switch($new_prod->condition){
+                if ($new_prod->condition !== "new") {
+                    switch ($new_prod->condition) {
                         case "used":
                             $this->tableData[$ref][] = ' <i>Used product</i>';
                             break;
@@ -383,7 +381,7 @@ class Bydemes
                 if ((int) $new_prod->available_for_order === 0) {
                     $this->tableData[$ref][] = ' <b>Not available to order</b>';
                 }
-                if((int) $new_prod->show_price === 0){
+                if ((int) $new_prod->show_price === 0) {
                     $this->tableData[$ref][] = ' <i>Price is hidden in the shop</i>';
                 }
 
@@ -396,6 +394,7 @@ class Bydemes
 
                     //If product is going to be updated
                     if ($ref_update) {
+
                         $prod_upd = $new_prod->update();
                         $this->tableData[$ref][] = $prod_upd ? 'Update info: The product was modified' : '<b>Fatal error</b>';
 
@@ -414,7 +413,6 @@ class Bydemes
                         //add new products
                         $new_prod->id_category_default = $default_category;
                         $new_prod->id_supplier = $this->bydemes_id;
-                        
                         $prod_add = $new_prod->add();
 
 
@@ -668,7 +666,6 @@ class Bydemes
      */
     public function processCsv()
     {
-
 
         foreach ($this->csv_data as $csv_values) {
             //obtain product reference
