@@ -575,6 +575,22 @@ class Bydemes
                     //Various changes to encode the string according the product
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
+                    $end = '';
+                    //If there's more than one paragraf, need to add a line jump to each one
+                    if (preg_match('/<\/p><p>/', $csv_values[$header])) {
+                        $parafs = preg_split('/<\/p>/', $csv_values[$header]);
+                        unset($parafs[count($parafs) - 1]);
+                        foreach ($parafs as $paraf_number => $paraf_value) {
+                            //For last paragraf, dont add the line jump
+                            if ($paraf_number === count($parafs) - 1) {
+                                $end .= $paraf_value . '</p>';
+                                continue;
+                            }
+                            $end .= $paraf_value . '</p>
+';
+                        }
+                        $csv_values[$header] = $end;
+                    }
                     break;
 
                     //obtains manufacturer_id given the name of the brand
