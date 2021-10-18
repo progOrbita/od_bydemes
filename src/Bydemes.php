@@ -196,7 +196,7 @@ class Bydemes
                     continue;
                 }
                 if (strlen($this->insert_csv[$ref]['description']) < 10) {
-                    $this->tableData[$ref] = ['<b>Description too short or empty. Product wont be inserted</b>'];
+                    $this->tableData[$ref] = ['<b>Description too short or empty. Product wont be inserted or updated</b>'];
                     continue;
                 }
 
