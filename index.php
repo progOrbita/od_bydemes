@@ -8,7 +8,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 if (!defined('_PS_VERSION_')) {
     require_once '../../config/config.inc.php';
     require_once '../../init.php';
-    
 }
 
 $reader = new Csv(
@@ -29,7 +28,6 @@ $bydemes = new Bydemes($data_file,'admin651fwyyde');
 
 $bydemes->processCsv();
 
-$bydemes->addDiscount(false);
 $bydemes->setCostPriceMargin(40);
 $bydemes->saveProducts();
 

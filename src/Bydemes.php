@@ -129,34 +129,6 @@ class Bydemes
     }
 
     /**
-     * Add a discount to new products
-     * @param bool $create true if there's a discount, false if no discounts are going to be created
-     * @param string $string_discount discount percentage, default value if not chosen
-     * @param int $days How much last the discount (default value for two weeks)
-     */
-    public function addDiscount(bool $create, string $string_discount = "12%", int $days = 15)
-    {
-        if ($create === false) {
-            return;
-        }
-        preg_match('/\d+/', $string_discount, $flat_discount);
-
-        $this->discount = new SpecificPrice();
-        $this->discount->id_shop = 1;
-        $this->discount->id_currency = 1;
-        $this->discount->id_country = 0;
-        $this->discount->id_group = 0;
-        $this->discount->id_customer = 0;
-        $this->discount->id_product_attribute = 0;
-        $this->discount->from_quantity = 1;
-        $this->discount->reduction_tax = 1;
-        $this->discount->reduction_type = 'percentage';
-        $this->discount->reduction = ((float)$flat_discount[0] / 100);
-        $this->discount->from = date('Y-m-d');
-        $this->discount->to = date('Y-m-d', strtotime("+" . $days . " days"));
-    }
-
-    /**
      * Add information to be shown. Lang is optional if the field is multilanguage
      * @param string $ref product reference
      * @param string $field name of the field to be shown in the table
@@ -420,16 +392,6 @@ class Bydemes
                         if (!$prod_add) {
                             $this->tableData[$ref][] = 'add info: <b>Error adding the product with reference ' . $ref . '</b>';
                             continue;
-                        }
-
-                        //if a discount exists
-                        if ($this->discount) {
-                            $this->discount->id_product = $new_prod->id;
-                            $this->discount->price = $new_prod->price;
-                            $this->discount->add();
-                            $days = round((strtotime($this->discount->to) - strtotime($this->discount->from)) / 86400);
-
-                            $this->tableData[$ref][] = 'discount of ' . ($this->discount->reduction * 100) . '% was added for ' . $days . ' days';
                         }
 
                         $new_prod->addSupplierReference($this->bydemes_id, 0);
