@@ -603,7 +603,8 @@ class Bydemes
         //for styles, in database without spaces.
         $desc_clean = preg_replace('/<p><\/p>|<span \/>/U', '', $desc_clean);
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
-        return Tools::purifyHTML($utfText);
+
+        return $desc_clean;
     }
 
     /**
