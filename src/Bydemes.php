@@ -538,7 +538,7 @@ class Bydemes
                     $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
                     //Products with two spaces instead of one.
                     $decoded_short_desc = preg_replace('/\s\s/', ' ', $decoded_short_desc);
-                    $csv_values[$header] = '<p>' . trim($decoded_short_desc) . '</p>';
+                    $csv_values[$header] = '<p>' . trim(Tools::purifyHTML($decoded_short_desc)) . '</p>';
                     break;
 
                     //Various changes to encode the string according the product
