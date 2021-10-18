@@ -598,6 +598,9 @@ class Bydemes
         $desc_clean = preg_replace('/\s>(?=\d+)/', "&gt;", $desc_clean);
         //For lesser than
         $desc_clean = preg_replace('/\s<(?=\d+)/', "&lt;", $desc_clean);
+        //Removes break lines (<br />) from the start of the description.
+        //Finds the <br /> followed by the start <p>, it may have an empty space and it can have more than one
+        $desc_clean = preg_replace('/(?<=^<p>)\s?(<br \/>\s?)*/m', '', $desc_clean);
         //If it have two spaces instead of one beetwen words
         $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
         //for styles, in database without spaces.
