@@ -192,6 +192,10 @@ class Bydemes
                     $this->tableData[$ref] = ['<b>Price is empty, the product wont be added</b>'];
                     continue;
                 }
+                if (empty($this->insert_csv[$ref]['name'])) {
+                    $this->tableData[$ref] = ['<b>Name is empty, product wont be created</b>'];
+                    continue;
+                }
 
                 //bool to check if reference exist or no in the database
                 $ref_exist = (bool) $this->tableData[$ref];
@@ -542,14 +546,14 @@ class Bydemes
                     //If there's more than one paragraf, need to add a line jump to each one
                     if (preg_match_all('/<p>(.+)<\/p>/U', $csv_values[$header], $match)) {
 
-                            foreach ($match[0] as $paraf_number => $paraf_value) {
-                                if ($paraf_number === count($match[0]) - 1) {
-                                    $end .= $paraf_value;
-                                    continue;
-                                }
-                                $end .= $paraf_value . '
-';
+                        foreach ($match[0] as $paraf_number => $paraf_value) {
+                            if ($paraf_number === count($match[0]) - 1) {
+                                $end .= $paraf_value;
+                                continue;
                             }
+                            $end .= $paraf_value . '
+';
+                        }
                         $csv_values[$header] = $end;
                     }
                     break;
@@ -633,6 +637,7 @@ class Bydemes
             $this->brands[$brand_name] = $new_brand->id;
             $id_manufacturer = $this->brands[$brand_name];
         }
+        return $id_manufacturer;
     }
 
     /**
@@ -658,11 +663,6 @@ class Bydemes
                 //For products already inserted
                 $this->tableData[$csv_ref][] = [];
             }
-        }
-    }
-
-            }
-
         }
     }
 }
