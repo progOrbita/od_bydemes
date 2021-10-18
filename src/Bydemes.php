@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+
 namespace OrbitaDigital\OdBydemes;
 
 //Minimum number for floats to be different, value from PHP_FLOAT_EPSILON, which is available in PHP 7.2 and later
@@ -19,41 +20,40 @@ use Tools;
  */
 class Bydemes
 {
+
+    //Contains the brands from the database
+    private $brands = [];
+
+    //bydemes identifier
+    private $bydemes_id;
+
+    //Reference-id of products included in the database
+    private $bydemes_products = [];
+
+    //Margin from PVP
+    private $cost_price_margin;
+
     //Data obtained from the csv
     private $csv_data = [];
 
     //admin url for products links
     private $urlAdm = '';
 
-    //Reference-id of products included in the database
-    private $bydemes_products = [];
-
-    //Contains the brands from the database
-    private $brands = [];
+    //langs
+    private $langs = [];
 
     //Formatted csv values
     private $insert_csv = [];
 
-    //Sorted information by reference that is shown to the user
-    private $tableData = [];
-
-    //langs
-    private $langs = [];
-
-    //bydemes identifier
-    private $bydemes_id;
-
-    //to create a discount
-    private $discount;
-
-    //Margin from PVP
-    private $cost_price_margin;
-
-
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
+    //Sorted information by reference that is shown to the user
+    private $tableData = [];
+
+    //If values are going to be updated
     private $update;
+
     /**
      * constructor
      * @param array $csv_data data obtained from reading the csv
@@ -85,23 +85,24 @@ class Bydemes
 
     /**
      * Get all the brands from the database
-     * @return bool|array array with the brands, false if sql have an error.
+     * @return bool|array array with the brands, false if query have an error.
      */
     private function getBrands()
     {
-        //obtains all the brands from the database
         $brands_query = Db::getInstance()->executeS('SELECT `id_manufacturer`,`name` FROM `ps_manufacturer`');
         if ($brands_query === false) {
             return false;
         }
         $brands = [];
+
         foreach ($brands_query as $brand) {
             $brands[$brand['name']] = $brand['id_manufacturer'];
         }
+
         return $brands;
     }
     /**
-     * Try to obtains the products in the database with reference - id_product
+     * Try to obtains the products in the database
      * @return bool|array array with the references and ids. False if there's an error in the query
      */
     private function getBydemesProducts()
@@ -114,19 +115,222 @@ class Bydemes
             return false;
         }
         $bydemes_products = [];
+
         foreach ($products_query as $product) {
             $bydemes_products[$product['reference']] = $product['id_product'];
         }
+
         return $bydemes_products;
     }
 
     /**
-     * Add information to be shown. Lang is optional if the field is multilanguage
+     * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
+     */
+    public function processCsv()
+    {
+
+        foreach ($this->csv_data as $csv_values) {
+            //obtain product reference
+            $csv_ref = $csv_values['reference'];
+            //Assign and formats values from csv so they can be compared with the database ones
+            $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
+
+            /**
+             * Stores values to show information in the table
+             * False - product isnt added
+             * emtpy - Product is on database
+             */
+            if (!isset($this->bydemes_products[$csv_ref])) {
+                $this->tableData[$csv_ref] = false;
+            } else {
+                //For products already inserted
+                $this->tableData[$csv_ref][] = [];
+            }
+        }
+    }
+
+    /**
+     * Format the Csv values so they can be compared with the values of Prestashop
+     * @param array $csv_values array with the values of the csv of a row (chosed by reference)
+     * @return array $csv_values array with the formated values
+     */
+    private function formatCsv(array $csv_values): array
+    {
+        foreach ($csv_values as $header => $row_value) {
+            switch ($header) {
+
+                    //replace needed because numbers use . not ,. cast and decimals needed to be compared with the database, 6 digits as prestashop.
+                case 'price':
+                    $csv_values[$header] = (float) str_replace(",", ".", $row_value);
+                    break;
+
+                    //For dimensions, changes letters to 0, removes lots of empty space and needs 6 digits like prestashop
+                case 'width':
+                case 'length':
+                case 'height':
+                case 'depth':
+                case 'weight':
+                    $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
+                    break;
+
+                    //low/medium/high values, turned values into numbers.
+                case 'quantity':
+                    if ($row_value != "0") {
+                        $csv_values[$header] = $this->stock_values[$row_value];
+                    }
+                    break;
+
+                    //replace if there's "" to only one and removes all the emtpy space. Then removes " at the beggining and the end if they exists.
+                case 'name':
+                    $inches = trim(str_replace('""', '"', $row_value));
+                    $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
+                    break;
+
+                    //prestashop keeps <p> in the field. Values are encoded
+                case 'description_short':
+                    $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
+                    //Products with two spaces instead of one.
+                    $decoded_short_desc = preg_replace('/\s\s/', ' ', $decoded_short_desc);
+                    //Some products have & in this field, need to be decoded
+                    $decoded_short_desc = preg_replace('/&/', "&amp;", $decoded_short_desc);
+
+                    $csv_values[$header] = '<p>' . trim($decoded_short_desc) . '</p>';
+                    break;
+
+                    //Various changes to encode the string according the product
+                case 'description':
+                    $csv_values[$header] = $this->process_desc($row_value);
+
+                    $end = '';
+                    //If there's more than one paragraf, need to add a line jump to each one
+                    if (preg_match_all('/<p>(.+)<\/p>/U', $csv_values[$header], $match)) {
+
+                        foreach ($match[0] as $paraf_number => $paraf_value) {
+                            if ($paraf_number === count($match[0]) - 1) {
+                                $end .= $paraf_value;
+                                continue;
+                            }
+                            $end .= $paraf_value . '
+';
+                        }
+                        $csv_values[$header] = $end;
+                    }
+                    break;
+
+                    //obtains manufacturer_id given the name of the brand
+                case 'manufacturer_name':
+                    $csv_values['id_manufacturer'] = (int) $this->check_brand_id($csv_values['reference'], $row_value, $this->update);
+                    break;
+            }
+        }
+        return $csv_values;
+    }
+
+    /**
+     * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be at least encoded
+     * Attemps to format like prestashop, which I need to compare both values to check if they are differents.
+     * 
+     * It still have some issues (from csv descriptions), most notorius ones from adding the first 1100 products, only 10 had errors.
+     * 1: Non-closed tags (product example DEM-541). <b> at the end isnt closed
+     * 2: Tags wrongly closed (product example FOC-192). <b><i>...</b></i>
+     * 3: br with attributes (product example SAM-1391) )<br de="" megapixel="" varifocal="" óptica="" />
+     * 4: Issues with span being at the end (product example ROK-26) or way after some <br/> (product example SATEL-57)
+     * @param string $row_value description value to be processed
+     * @return string description processed
+     */
+    private function process_desc($row_value): string
+    {
+        $utfText = html_entity_decode($row_value, ENT_QUOTES, 'UTF-8');
+
+        //removes all the empty space, usually at the end of the description
+        $desc_trim = trim($utfText);
+        //br at the end of the description field is removed in prestashop
+        $desc_del_end_br = preg_replace('/<br>$/', '', $desc_trim);
+        //description may not have <p> open/closing the description, it's must have it always.
+        stristr($desc_del_end_br, '<p>') ? $desc_p = $desc_del_end_br : $desc_p = '<p>' . $desc_del_end_br . '</p>';
+        //format <br> to <br />
+        $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
+        //Removes img tag, style, class, lang or id attributes, empty p, emtpy span, br at the beggining...
+        $patterns = [
+            '/<img(.+)>/U',
+            '/\sstyle="(.+)"/U',
+            '/\sclass="(.+)"/U',
+            '/\sid="(.+)"/U',
+            '/<p><\/p>/U',
+            '/(<span>){2,}/',
+            '/(<\/span>){2,}/',
+            '/<span \/>/',
+            '/<span><\/span>/',
+            '/\slang="(.+)"/U',
+            '/(?<=^<p>)\s?(<br \/>\s?)*|/m' //Lookbehind assertion, matches \s?(<br \/>\s?)* only if it's followed by ^<p>
+        ];
+        $desc_clean = preg_replace($patterns, '', $desc_fix_br);
+
+        //htmlspecialchars converts all the special characters including the tags so I need to manage it.
+        //for &, is decodified in prestashop
+        $desc_clean = preg_replace('/&/', "&amp;", $desc_clean);
+        //for greater and lesser than symbol, Prestashop decode it. Attemps to decode it and avoid touching the tags.
+        //Pick the "\s>" followed (?=) by one or more numbers. To avoid changing open/close tags < and >. must have a space before it.
+        $desc_clean = preg_replace('/\s>(?=\d+)/', "&gt;", $desc_clean);
+        //For lesser than, it may not have the space.
+        $desc_clean = preg_replace('/\s?<(?=\d+)/', "&lt;", $desc_clean);
+        //If it have two spaces instead of one beetwen words removes one.
+        $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
+
+        //For some products with <tag><br/> </tag>. Remove later tag and puts it before <br/>, wild card from 0 to 5 characters because may be at some distance.
+        $desc_clean = preg_replace('/<br \/>.{0,5}<\/em>/', '</em><br />', $desc_clean);
+        $desc_clean = preg_replace('/<br \/>.{0,5}<\/strong>/', '</strong><br />', $desc_clean);
+
+        //changes <br/> to a new <p> (if it isn't followed by a nearing (0-20 characters) </span> tag).
+        $desc_clean = preg_replace('/(<br \/>\s?)+(?!(.){0,20}<\/span)/', '</p><p>', $desc_clean);
+
+        return $desc_clean;
+    }
+
+    /**
+     * Obtain manufacturer_id from the name. If no manufacturer_id is found in the database attempts to create it.
+     * @param string $ref product reference, to add information
+     * @param string $brand_name, name of the brand
+     */
+    private function check_brand_id(string $ref, string $brand_name, bool $update)
+    {
+        if (empty($brand_name)) {
+            return;
+        }
+
+        $id_manufacturer = $this->brands[$brand_name];
+        if (empty($id_manufacturer)) {
+
+            //if write isn't set
+            if (!$update) {
+                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
+                return;
+            }
+            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
+            $new_brand = new Manufacturer();
+            $new_brand->name = $brand_name;
+            $new_brand->active = 1;
+            $add_brand = $new_brand->add();
+
+            if (!$add_brand) {
+                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
+                return;
+            }
+
+            $this->brands[$brand_name] = $new_brand->id;
+            $id_manufacturer = $this->brands[$brand_name];
+        }
+        return $id_manufacturer;
+    }
+
+
+    /**
+     * Add information which will be displayed in a table. Lang is optional for multilanguages fields
      * @param string $ref product reference
      * @param string $field name of the field to be shown in the table
-     * @param mixed $product_field information of the field of the product
-     * @param mixed $field_value value which expect to update to
-     * @param bool $lang default false, to format long string fields
+     * @param mixed $product_field information of the field of the product in database
+     * @param mixed $field_value value which expects to update to
+     * @param bool $lang default false, to format description (html type) fields
      */
     private function addTableData(string $ref, string $field, $product_field, $field_value, bool $lang = false)
     {
@@ -140,9 +344,10 @@ class Bydemes
             $this->tableData[$ref][] = ucfirst($field) . ' will be updated from: <b>' . $product_field . '</b> to <b>' . $field_value . '</b>';
         }
     }
+
     /**
      * Margin price to be reduced from PVP to obtain price cost.
-     * @param int $percentage flat percentage to be reduced from product PVP.
+     * @param int $percentage flat percentage (I.E. 1-100) to be reduced from product PVP.
      */
     public function setCostPriceMargin(int $percentage)
     {
@@ -179,11 +384,11 @@ class Bydemes
                     $this->tableData[$ref] = ['<b>The product is descatalogued, ignored</b>'];
                     continue;
                 }
-                //For products without price which aren't added in the database
                 if ($this->insert_csv[$ref]['price'] === 0.00) {
                     $this->tableData[$ref] = ['<b>Price is empty, the product wont be added</b>'];
                     continue;
                 }
+                //For empty name or description being empty/short
                 if (empty($this->insert_csv[$ref]['name'])) {
                     $this->tableData[$ref] = ['<b>Name is empty, product wont be created</b>'];
                     continue;
@@ -193,7 +398,7 @@ class Bydemes
                     continue;
                 }
 
-                //bool to check if reference exist or no in the database
+                //bool to check if reference exist (tabledata have content) or no in the database
                 $ref_exist = (bool) $this->tableData[$ref];
 
                 //check if the product is being updated
@@ -217,21 +422,21 @@ class Bydemes
                         case 'category':
                             break;
 
-                            //once some of them works properly would be added active always. Message is just informative
                         case 'active':
                             if (!$ref_exist) {
-                                $new_prod->active = ($i + 1) % 2;  //active even and deactive odd csv references
+                                $new_prod->active = ($i + 1) % 2;  //When adding products, active even and deactive odd references from csv
                             }
 
                             if ($ref_exist && (int)$new_prod->active === 0) {
                                 $this->tableData[$ref][] = '<i>Product deactivated</i>';
                             }
                             break;
+
                         case 'id_manufacturer':
 
                             if ($ref_exist) {
                                 if ((int) $new_prod->$field !== $field_value) {
-
+                                    //flip array to id_brand => name. To find name of old (Product) brand and the new one
                                     $id_brands = array_flip($this->brands);
                                     $old_brand = $id_brands[$new_prod->id_manufacturer];
                                     $new_brand = $id_brands[$field_value];
@@ -244,10 +449,10 @@ class Bydemes
                             break;
 
                         case 'quantity':
-                            $csv_quantity = (int) $field_value;
                             if (!$ref_exist) {
                                 break;
                             }
+                            $csv_quantity = (int) $field_value;
                             $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                             if ($new_prod->$field !== (int) $field_value) {
                                 $this->addTableData($ref, $field, $new_prod->$field, $field_value);
@@ -261,7 +466,7 @@ class Bydemes
                         case 'depth':
                         case 'weight':
                             if ($ref_exist) {
-                                
+
                                 if (abs((float) $new_prod->$field - $field_value) > MIN_FLOAT) {
 
                                     $ref_update = true;
@@ -485,196 +690,5 @@ class Bydemes
         }
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
-    }
-
-    /**
-     * Format the Csv values so they can be compared with the values of Prestashop
-     * @param array $csv_values array with the values of the csv of a row (chosed by reference)
-     * @return array $csv_values array with the formated values
-     */
-    private function formatCsv(array $csv_values): array
-    {
-        foreach ($csv_values as $header => $row_value) {
-            switch ($header) {
-
-                    //replace needed because numbers use . not ,. cast and decimals needed to be compared with the database, 6 digits as prestashop.
-                case 'price':
-                    $csv_values[$header] = (float) str_replace(",", ".", $row_value);
-                    break;
-
-                    //For dimensions, changes letters to 0, removes lots of empty space and needs 6 digits like prestashop
-                case 'width':
-                case 'length':
-                case 'height':
-                case 'depth':
-                case 'weight':
-                    $csv_values[$header] = (float) preg_replace('/[a-z]+/i', '', trim($row_value));
-                    break;
-
-                    //low/medium/high values, turned values into numbers.
-                case 'quantity':
-                    if ($row_value != "0") {
-                        $csv_values[$header] = $this->stock_values[$row_value];
-                    }
-                    break;
-
-                    //replace if there's "" to only one and removes all the emtpy space. Then removes " at the beggining and the end if they exists.
-                case 'name':
-                    $inches = trim(str_replace('""', '"', $row_value));
-                    $csv_values[$header] = preg_replace('/^"|"$/', '', $inches);
-                    break;
-
-                    //prestashop keeps <p> in the field. Values are encoded
-                case 'description_short':
-                    $decoded_short_desc = html_entity_decode($csv_values[$header], ENT_QUOTES, "UTF-8");
-                    //Products with two spaces instead of one.
-                    $decoded_short_desc = preg_replace('/\s\s/', ' ', $decoded_short_desc);
-                    $csv_values[$header] = '<p>' . trim(Tools::purifyHTML($decoded_short_desc)) . '</p>';
-                    break;
-
-                    //Various changes to encode the string according the product
-                case 'description':
-                    $csv_values[$header] = $this->process_desc($row_value);
-
-                    $end = '';
-                    //If there's more than one paragraf, need to add a line jump to each one
-                    if (preg_match_all('/<p>(.+)<\/p>/U', $csv_values[$header], $match)) {
-
-                        foreach ($match[0] as $paraf_number => $paraf_value) {
-                            if ($paraf_number === count($match[0]) - 1) {
-                                $end .= $paraf_value;
-                                continue;
-                            }
-                            $end .= $paraf_value . '
-';
-                        }
-                        $csv_values[$header] = $end;
-                    }
-                    break;
-
-                    //obtains manufacturer_id given the name of the brand
-                case 'manufacturer_name':
-                    $csv_values['id_manufacturer'] = (int) $this->check_brand_id($csv_values['reference'], $row_value, $this->update);
-                    break;
-            }
-        }
-        return $csv_values;
-    }
-    /**
-     * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be at least encoded
-     * Attemps to format like prestashop, which I need to compare both values to check if they are differents.
-     * 
-     * @param string $row_value description value to be processed
-     * @return string description processed
-     */
-    private function process_desc($row_value): string
-    {
-        $utfText = html_entity_decode($row_value, ENT_QUOTES, 'UTF-8');
-
-        //removes all the empty space, usually at the end of the description
-        $desc_trim = trim($utfText);
-        //br at the end of the description field is removed in prestashop
-        $desc_del_end_br = preg_replace('/<br>$/', '', $desc_trim);
-        //description may not have <p> open/closing the description, it's must have it always.
-        stristr($desc_del_end_br, '<p>') ? $desc_p = $desc_del_end_br : $desc_p = '<p>' . $desc_del_end_br . '</p>';
-        //format <br> to <br />
-        $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
-        //Removes img tag, style, class, lang or id attributes, empty p, emtpy span, br at the beggining...
-        $patterns = [
-            '/<img(.+)>/U',
-            '/\sstyle="(.+)"/U',
-            '/\sclass="(.+)"/U',
-            '/\sid="(.+)"/U',
-            '/<p><\/p>/U',
-            '/(<span>){2,}/',
-            '/(<\/span>){2,}/',
-            '/<span \/>/',
-            '/<span><\/span>/',
-            '/\slang="(.+)"/U',
-            '/(?<=^<p>)\s?(<br \/>\s?)*|/m' //Lookbehind assertion, matches \s?(<br \/>\s?)* only if it's followed by ^<p>
-        ];
-        $desc_clean = preg_replace($patterns, '', $desc_fix_br);
-
-        //htmlspecialchars converts all the special characters including the tags so I need to manage it.
-        //for &, is decodified in prestashop
-        $desc_clean = preg_replace('/&/', "&amp;", $desc_clean);
-        //for greater and lesser than symbol, Prestashop decode it. Attemps to decode it and avoid touching the tags.
-        //Pick the "\s>" followed (?=) by one or more numbers. To avoid changing open/close tags < and >. must have a space before it.
-        $desc_clean = preg_replace('/\s>(?=\d+)/', "&gt;", $desc_clean);
-        //For lesser than, it may not have the space.
-        $desc_clean = preg_replace('/\s?<(?=\d+)/', "&lt;", $desc_clean);
-        //If it have two spaces instead of one beetwen words removes one.
-        $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
-
-        //For some products with <tag><br/> </tag>. Remove later tag and puts it before <br/>, wild card from 0 to 5 characters because may be at some distance.
-        $desc_clean = preg_replace('/<br \/>.{0,5}<\/em>/', '</em><br />', $desc_clean);
-        $desc_clean = preg_replace('/<br \/>.{0,5}<\/strong>/', '</strong><br />', $desc_clean);
-
-        //changes <br/> to a new <p> (if it isn't followed by a nearing (0-20 characters) </span> tag).
-        $desc_clean = preg_replace('/(<br \/>\s?)+(?!(.){0,20}<\/span)/', '</p><p>', $desc_clean);
-
-        return $desc_clean;
-    }
-
-    /**
-     * Obtain manufacturer_id from the name. If no manufacturer_id is found in the database attempts to create it.
-     * @param string $ref product reference, to add information
-     * @param string $brand_name, name of the brand
-     */
-    private function check_brand_id(string $ref, string $brand_name, bool $update)
-    {
-        if (empty($brand_name)) {
-            return;
-        }
-
-        $id_manufacturer = $this->brands[$brand_name];
-        if (empty($id_manufacturer)) {
-
-            //if write isn't set
-            if (!$update) {
-                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
-                return;
-            }
-            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
-            $new_brand = new Manufacturer();
-            $new_brand->name = $brand_name;
-            $new_brand->active = 1;
-            $add_brand = $new_brand->add();
-
-            if (!$add_brand) {
-                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
-                return;
-            }
-
-            $this->brands[$brand_name] = $new_brand->id;
-            $id_manufacturer = $this->brands[$brand_name];
-        }
-        return $id_manufacturer;
-    }
-
-    /**
-     * Process the csv information, formating the fields so they can be compared to update the product, or add a fresh one.
-     */
-    public function processCsv()
-    {
-
-        foreach ($this->csv_data as $csv_values) {
-            //obtain product reference
-            $csv_ref = $csv_values['reference'];
-            //Assign and formats values from csv so they can be compared with the database ones
-            $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
-
-            /**
-             * Stores values to show information in the table
-             * False - product isnt added
-             * emtpy - Product is on database
-             */
-            if (!isset($this->bydemes_products[$csv_ref])) {
-                $this->tableData[$csv_ref] = false;
-            } else {
-                //For products already inserted
-                $this->tableData[$csv_ref][] = [];
-            }
-        }
     }
 }
