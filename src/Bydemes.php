@@ -223,13 +223,11 @@ class Bydemes
 
                             //once some of them works properly would be added active always. Message is just informative
                         case 'active':
-                            $active = ($i + 1) % 2; //active even and deactive odd csv references
-
-                            if ($ref_exist && (int)$new_prod->$field !== $active) {
-                                $new_prod->active = $active;
+                            if(!$ref_exist){
+                                $new_prod->active = ($i + 1) % 2;  //active even and deactive odd csv references
                             }
 
-                            if ($ref_exist && (int)$new_prod->$field === 0) {
+                            if ($ref_exist && (int)$new_prod->active === 0) {
                                 $this->tableData[$ref][] = '<i>Product deactivated</i>';
                             }
                             break;
