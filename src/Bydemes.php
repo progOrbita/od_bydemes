@@ -585,7 +585,7 @@ class Bydemes
         stristr($desc_rem_br, '<p>') ? $desc_p = $desc_rem_br : $desc_p = '<p>' . $desc_rem_br . '</p>';
         //format <br> to <br />
         $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
-        //Cleans img tag, style, class, id, empty p, emtpy span and br at the beggining
+        //Cleans img tag, style, class, id, empty p, emtpy span, lang attribute, br at the beggining...
         $patterns = [
             '/<img(.+)>/U',
             '/\sstyle="(.+)"/U',
@@ -595,7 +595,8 @@ class Bydemes
             '/(<span>){2,}/',
             '/(<\/span>){2,}/',
             '/<span \/>/',
-            '/lang="(.+)"/U',
+            '/<span><\/span>/',
+            '/\slang="(.+)"/U',
             '/(?<=^<p>)\s?(<br \/>\s?)*|/m'
             ];
 
