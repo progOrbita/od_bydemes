@@ -8,7 +8,6 @@ use Db;
 use Language;
 use Manufacturer;
 use Product;
-use SpecificPrice;
 use StockAvailable;
 use Tools;
 
