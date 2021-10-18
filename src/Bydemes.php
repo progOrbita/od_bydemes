@@ -196,6 +196,10 @@ class Bydemes
                     $this->tableData[$ref] = ['<b>Name is empty, product wont be created</b>'];
                     continue;
                 }
+                if (strlen($this->insert_csv[$ref]['description']) < 10) {
+                    $this->tableData[$ref] = ['<b>Description too short or empty. Product wont be inserted</b>'];
+                    continue;
+                }
 
                 //bool to check if reference exist or no in the database
                 $ref_exist = (bool) $this->tableData[$ref];
