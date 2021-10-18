@@ -227,7 +227,7 @@ class Bydemes
 
                             //once some of them works properly would be added active always. Message is just informative
                         case 'active':
-                            if(!$ref_exist){
+                            if (!$ref_exist) {
                                 $new_prod->active = ($i + 1) % 2;  //active even and deactive odd csv references
                             }
 
@@ -595,7 +595,6 @@ class Bydemes
         $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
         //For lesser than
         $utfText = preg_replace('/\s<(?=\d+)/', "&lt;", $utfText);
-
         //If it have two spaces instead of one beetwen words
         $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
