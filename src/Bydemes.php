@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace OrbitaDigital\OdBydemes;
 
+//Minimum number for floats to be different, value from PHP_FLOAT_EPSILON, which is available in PHP 7.2 and later
+define("MIN_FLOAT", 2.2204460492503E-16);
+
 use Db;
 use Language;
 use Manufacturer;
@@ -268,8 +271,8 @@ class Bydemes
                         case 'depth':
                         case 'weight':
                             if ($ref_exist) {
-
-                                if (abs((float) $new_prod->$field - $field_value) > 'PHP_FLOAT_EPSILON') {
+                                
+                                if (abs((float) $new_prod->$field - $field_value) > MIN_FLOAT) {
 
                                     $ref_update = true;
                                     $this->addTableData($ref, $field, (float) $new_prod->$field, $field_value);
@@ -312,7 +315,7 @@ class Bydemes
                 $new_prod->wholesale_price = (float) round($new_prod->price * $this->cost_price_margin, 6);
 
                 if ($ref_exist) {
-                    if (abs((float)$old_wholesale - $new_prod->wholesale_price) > 'PHP_FLOAT_EPSILON') {
+                    if (abs((float)$old_wholesale - $new_prod->wholesale_price) > MIN_FLOAT) {
                         $ref_update = true;
                         if ($this->update) {
                             $this->tableData[$ref][] = 'Wholesale price was changed';
