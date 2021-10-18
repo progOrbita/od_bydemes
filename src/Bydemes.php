@@ -577,28 +577,31 @@ class Bydemes
      */
     private function process_desc($row_value): string
     {
+        $utfText = html_entity_decode($row_value, ENT_QUOTES, 'UTF-8');
+
         //removes all the empty space, usually at the end of the description
-        $desc_clean = trim($row_value);
+        $desc_trim = trim($utfText);
         //br at the end of the description field is removed in prestashop
-        $desc_clean = preg_replace('/<br>$/', '', $desc_clean);
+        $desc_rem_br = preg_replace('/<br>$/', '', $desc_trim);
         //description may not have <p> at the beggining and the end. It's added if it's needed
-        stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
+        stristr($desc_rem_br, '<p>') ? $desc_p = $desc_rem_br : $desc_p = '<p>' . $desc_rem_br . '</p>';
         //format <br> to <br />
-        $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
+        $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
         //Cleans img tag, and styles from description in the csv
-        $desc_processed = preg_replace('/<img(.+)>|\sstyle="(.+)"|\sclass="(.+)"|\sid="(.+)"/U', '', $desc_processed);
-        //decoded text for acute; ncute; and more symbols.
-        $utfText = html_entity_decode($desc_processed, ENT_QUOTES, 'UTF-8');
+        $patterns = ['/<img(.+)>/U', '/\sstyle="(.+)"/U', '/\sclass="(.+)"/U', '/\sid="(.+)"/U'];
+        $desc_clean = preg_replace($patterns, '', $desc_fix_br);
+
+        //decoded text for acute; ncute; and more symbols. htmlspecialchars converts all of them including the tags
         //for &, is decodified to &amp; in prestashop
-        $utfText = preg_replace('/&/', "&amp;", $utfText);
+        $desc_clean = preg_replace('/&/', "&amp;", $desc_clean);
         //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing open/close tags < and >
-        $utfText = preg_replace('/\s>(?=\d+)/', "&gt;", $utfText);
+        $desc_clean = preg_replace('/\s>(?=\d+)/', "&gt;", $desc_clean);
         //For lesser than
-        $utfText = preg_replace('/\s<(?=\d+)/', "&lt;", $utfText);
+        $desc_clean = preg_replace('/\s<(?=\d+)/', "&lt;", $desc_clean);
         //If it have two spaces instead of one beetwen words
-        $utfText = preg_replace('/\s\s/', ' ', $utfText);
+        $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
         //for styles, in database without spaces.
-        $utfText = preg_replace('/<p><\/p>|<span><\/span>/U', '', $utfText);
+        $desc_clean = preg_replace('/<p><\/p>|<span \/>/U', '', $desc_clean);
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
         return Tools::purifyHTML($utfText);
     }
