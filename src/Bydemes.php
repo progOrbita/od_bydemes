@@ -598,14 +598,16 @@ class Bydemes
         //For lesser than
         $desc_clean = preg_replace('/\s<(?=\d+)/', "&lt;", $desc_clean);
         //Removes break lines (<br />) from the start of the description.
-        //Finds the <br /> followed by the start <p>, it may have an empty space and it can have more than one
-        $desc_clean = preg_replace('/(?<=^<p>)\s?(<br \/>\s?)*/m', '', $desc_clean);
+        //Finds the <br /> followed by the start <p>, it may have an empty space and it can have more than one.
+        //Something something in 137A, because &nbsp; characters arent detected by \s
+        $desc_clean = preg_replace('/(?<=^<p>)\s?(<br \/>\s?)*|/m', '', $desc_clean);
+        //Finding <br /> and changing it for </p><p>
         //If it have two spaces instead of one beetwen words
         $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
+        //changes <br/> to <p>
+        $desc_clean = preg_replace('/(<br \/>\s?)+/','</p><p>',$desc_clean);
         //for styles, in database without spaces.
         $desc_clean = preg_replace('/<p><\/p>|<span \/>/U', '', $desc_clean);
-        //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
-
         return $desc_clean;
     }
 
