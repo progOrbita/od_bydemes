@@ -540,6 +540,7 @@ class Bydemes
                     //Various changes to encode the string according the product
                 case 'description':
                     $csv_values[$header] = $this->process_desc($row_value);
+
                     $end = '';
                     //If there's more than one paragraf, need to add a line jump to each one
                     if (preg_match_all('/<p>(.+)<\/p>/U', $csv_values[$header], $match)) {
@@ -594,6 +595,7 @@ class Bydemes
         //If it have two spaces instead of one beetwen words
         $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
+        $utfText = preg_replace('/<p><\/p>|<span><\/span>/U', '', $utfText);
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
         return Tools::purifyHTML($utfText);
     }
