@@ -580,12 +580,8 @@ class Bydemes
         stristr($desc_clean, '<p>') ? $desc_encoded = $desc_clean : $desc_encoded = '<p>' . $desc_clean . '</p>';
         //format <br> to <br />
         $desc_processed = str_replace('<br>', '<br />', $desc_encoded);
-        //if alt isn't added in img. Prestashop format the img tag to add alt attribute with the img name on it if doesn't have one. Added a default one.
-        if (preg_match('/<img/', $desc_processed)) {
-            if (!preg_match('/alt=""/', $desc_processed)) {
-                $desc_processed = preg_replace('/">/', '" alt="" />', $desc_processed);
-            }
-        }
+        //Cleans img tag, and styles from description in the csv
+        $desc_processed = preg_replace('/<img(.+)>|\sstyle="(.+)"|\sclass="(.+)"|\sid="(.+)"/U', '', $desc_processed);
         //decoded text for acute; ncute; and more symbols.
         $utfText = html_entity_decode($desc_processed, ENT_QUOTES, 'UTF-8');
         //for &, is decodified to &amp; in prestashop
@@ -599,7 +595,7 @@ class Bydemes
         $utfText = preg_replace('/\s\s/', ' ', $utfText);
         //for styles, in database without spaces.
         //Check if there's a style, if so whenever a empty space is after letters and : or ;, removes the empty space after. Regex only picks the empty space.
-        return Tools::purifyHTML(preg_replace('/(?<=[style="\w+][:;])\s/', '', $utfText));
+        return Tools::purifyHTML($utfText);
     }
 
     /**
