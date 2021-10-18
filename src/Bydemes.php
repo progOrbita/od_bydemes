@@ -352,8 +352,7 @@ class Bydemes
                             break;
                     }
                 }
-                
-                if((int) $new_prod->online_only === 0){
+                if ($ref_exist && (int) $new_prod->online_only === 1) {
                     $this->tableData[$ref][] = ' <i>Product only available in the web</i>';
                 }
                 if ((int) $new_prod->available_for_order === 0) {
