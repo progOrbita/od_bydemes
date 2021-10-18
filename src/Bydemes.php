@@ -585,10 +585,22 @@ class Bydemes
         stristr($desc_rem_br, '<p>') ? $desc_p = $desc_rem_br : $desc_p = '<p>' . $desc_rem_br . '</p>';
         //format <br> to <br />
         $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
-        //Cleans img tag, and styles from description in the csv
-        $patterns = ['/<img(.+)>/U', '/\sstyle="(.+)"/U', '/\sclass="(.+)"/U', '/\sid="(.+)"/U'];
-        $desc_clean = preg_replace($patterns, '', $desc_fix_br);
+        //Cleans img tag, style, class, id, empty p, emtpy span and br at the beggining
+        $patterns = [
+            '/<img(.+)>/U',
+            '/\sstyle="(.+)"/U',
+            '/\sclass="(.+)"/U',
+            '/\sid="(.+)"/U',
+            '/<p><\/p>/U',
+            '/(<span>){2,}/',
+            '/(<\/span>){2,}/',
+            '/<span \/>/',
+            '/lang="(.+)"/U',
+            '/(?<=^<p>)\s?(<br \/>\s?)*|/m'
+            ];
 
+        //mod span, para no quitar
+        $desc_clean = preg_replace($patterns, '', $desc_fix_br);
         //decoded text for acute; ncute; and more symbols. htmlspecialchars converts all of them including the tags
         //for &, is decodified to &amp; in prestashop
         $desc_clean = preg_replace('/&/', "&amp;", $desc_clean);
