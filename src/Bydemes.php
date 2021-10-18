@@ -49,8 +49,6 @@ class Bydemes
     //Margin from PVP
     private $cost_price_margin;
 
-    //Message to identify the errors that may happen when calling the database
-    private $queryError = '';
 
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
@@ -120,14 +118,6 @@ class Bydemes
             $bydemes_products[$product['reference']] = $product['id_product'];
         }
         return $bydemes_products;
-    }
-    /**
-     * Get queryError
-     * @return string $queryError Shows the error of the query
-     */
-    public function getQueryError(): string
-    {
-        return $this->queryError;
     }
 
     /**
