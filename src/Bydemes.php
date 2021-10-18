@@ -48,7 +48,7 @@ class Bydemes
     //Default values for the three sizes of stock.
     private $stock_values = ['Low' => "5", 'Medium' => "50", 'High' => "100"];
 
-    //Sorted information by reference that is shown to the user
+    //Information sorted by product reference that is shown to the user
     private $tableData = [];
 
     //If values are going to be updated
@@ -136,9 +136,8 @@ class Bydemes
             $this->insert_csv[$csv_ref] = $this->formatCsv($csv_values);
 
             /**
-             * Stores values to show information in the table
              * False - product isnt added
-             * emtpy - Product is on database
+             * emtpy - Product is on database, will store changes if there's any
              */
             if (!isset($this->bydemes_products[$csv_ref])) {
                 $this->tableData[$csv_ref] = false;
@@ -290,49 +289,55 @@ class Bydemes
     /**
      * Obtain manufacturer_id from the name. If no manufacturer_id is found in the database attempts to create it.
      * @param string $ref product reference, to add information
-     * @param string $brand_name, name of the brand
+     * @param string $brand_name name of the brand
+     * @param bool $update if data is going to be updated
+     * @return void|int nothing if there's an error or dont exist, manufacturer id if there's no errors.
      */
     private function check_brand_id(string $ref, string $brand_name, bool $update)
     {
-        if (empty($brand_name)) {
-            return;
-        }
-
-        $id_manufacturer = $this->brands[$brand_name];
-        if (empty($id_manufacturer)) {
-
-            //if write isn't set
-            if (!$update) {
-                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
-                return;
-            }
-            $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
-            $new_brand = new Manufacturer();
-            $new_brand->name = $brand_name;
-            $new_brand->active = 1;
-            $add_brand = $new_brand->add();
-
-            if (!$add_brand) {
-                $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
+        try {
+            if (empty($brand_name)) {
                 return;
             }
 
-            $this->brands[$brand_name] = $new_brand->id;
             $id_manufacturer = $this->brands[$brand_name];
+            if (empty($id_manufacturer)) {
+
+                //if write isn't set
+                if (!$update) {
+                    $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found</td>';
+                    return;
+                }
+                $this->tableData[$ref][] = 'brand <b>' . $brand_name . '</b> not found creating...</td>';
+                $new_brand = new Manufacturer();
+                $new_brand->name = $brand_name;
+                $new_brand->active = 1;
+                $add_brand = $new_brand->add();
+
+                if (!$add_brand) {
+                    $this->tableData[$ref][] = '<b>Error, brand: ' . $brand_name . ' couldnt be created</b></td>';
+                    return;
+                }
+
+                $this->brands[$brand_name] = $new_brand->id;
+                $id_manufacturer = $this->brands[$brand_name];
+            }
+            return $id_manufacturer;
+        } catch (\Throwable $th) {
+            $this->tableData[$ref][] = '<b>Fatal error ' . $th->getMessage() . '</b> Manufacturer couldnt be created</b></td>';
         }
-        return $id_manufacturer;
     }
 
 
     /**
-     * Add information which will be displayed in a table. Lang is optional for multilanguages fields
+     * Add information which will be displayed in the table. Lang is optional for multilanguages fields
      * @param string $ref product reference
      * @param string $field name of the field to be shown in the table
      * @param mixed $product_field information of the field of the product in database
-     * @param mixed $field_value value which expects to update to
+     * @param mixed $field_value value which is expected to update to
      * @param bool $lang default false, to format description (html type) fields
      */
-    private function addTableData(string $ref, string $field, $product_field, $field_value, bool $lang = false)
+    private function addTableInfo(string $ref, string $field, $product_field, $field_value, bool $lang = false)
     {
         if ($this->update) {
             $this->tableData[$ref][] = ucfirst($field) . ' was changed';
@@ -441,7 +446,7 @@ class Bydemes
                                     $old_brand = $id_brands[$new_prod->id_manufacturer];
                                     $new_brand = $id_brands[$field_value];
 
-                                    $this->addTableData($ref, "manufacturer", $old_brand, $new_brand);
+                                    $this->addTableInfo($ref, "manufacturer", $old_brand, $new_brand);
                                     $ref_update = true;
                                 }
                             }
@@ -455,7 +460,7 @@ class Bydemes
                             $csv_quantity = (int) $field_value;
                             $new_prod->$field = StockAvailable::getQuantityAvailableByProduct($id_product);
                             if ($new_prod->$field !== (int) $field_value) {
-                                $this->addTableData($ref, $field, $new_prod->$field, $field_value);
+                                $this->addTableInfo($ref, $field, $new_prod->$field, $field_value);
                                 $ref_update = true;
                             }
                             break;
@@ -470,7 +475,7 @@ class Bydemes
                                 if (abs((float) $new_prod->$field - $field_value) > MIN_FLOAT) {
 
                                     $ref_update = true;
-                                    $this->addTableData($ref, $field, (float) $new_prod->$field, $field_value);
+                                    $this->addTableInfo($ref, $field, (float) $new_prod->$field, $field_value);
                                 }
                             }
                             $new_prod->$field = $field_value;
@@ -485,7 +490,7 @@ class Bydemes
                                 if ($ref_exist) {
                                     if ($new_prod->$field[$id_lang] !== $field_value) {
                                         $ref_update = true;
-                                        $this->addTableData($ref, $field . ' in ' . $lang_name, $new_prod->$field[$id_lang], $field_value, true);
+                                        $this->addTableInfo($ref, $field . ' in ' . $lang_name, $new_prod->$field[$id_lang], $field_value, true);
                                     }
                                 }
                                 $new_prod->$field[$id_lang] = $field_value;
@@ -497,7 +502,7 @@ class Bydemes
                                 if ($new_prod->$field !== $field_value) {
 
                                     $ref_update = true;
-                                    $this->addTableData($ref, $field, $new_prod->$field, $field_value);
+                                    $this->addTableInfo($ref, $field, $new_prod->$field, $field_value);
                                 }
                             }
                             $new_prod->$field = $field_value;
@@ -505,7 +510,7 @@ class Bydemes
                     }
                 }
 
-                //wholesale price
+                //wholesale price/price cost
                 $old_wholesale = (float) $new_prod->wholesale_price;
                 $new_prod->wholesale_price = (float) round($new_prod->price * $this->cost_price_margin, 6);
 
@@ -515,7 +520,7 @@ class Bydemes
                         if ($this->update) {
                             $this->tableData[$ref][] = 'Wholesale price was changed';
                         } else {
-                            $this->addTableData($ref, "wholesale price", $old_wholesale, $new_prod->wholesale_price);
+                            $this->addTableInfo($ref, "wholesale price", $old_wholesale, $new_prod->wholesale_price);
                         }
                     }
                 }
@@ -614,7 +619,7 @@ class Bydemes
             }
         } catch (\Throwable $th) {
             //catch the exception if update throws an error
-            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>, it wont be added';
+            $this->tableData[$ref][] = '<b>Error ' . $th->getMessage() . '</b>';
         }
     }
 
@@ -632,7 +637,7 @@ class Bydemes
     }
 
     /**
-     * generates the string of the table with the information obtained from the products and csv proccesing
+     * generates the string of the table with the information obtained from the products and processing the csv
      * @return string string with the table
      */
     public function getTable(): string
@@ -674,13 +679,15 @@ class Bydemes
                 $tableBody .= '<tr><td>' . $ref . '</td><td><li> Reference not found, will be created</td></tr>';
                 continue;
             }
-            //Products not added or new ones.
-            if (empty((int) $this->bydemes_products[$ref])) {
+
+            //Products not added or new ones. (only a message showing the error is stored), not have the link.
+            if ((count($this->tableData[$ref]) === 1)) {
                 $tableBody .= '<tr><td>' . $ref . '</td><td>';
             } else {
                 //links for products inserted in Prestashop
                 $tableBody .= '<tr><td><a href="' . $this->createProductLink((int) $this->bydemes_products[$ref], $token) . '">' . $ref . '</a></td><td>';
             }
+
             foreach ($ref_changes as $changed_values) {
                 if (!is_array($changed_values)) {
                     $tableBody .= '<li>' . $changed_values . '</li>';
