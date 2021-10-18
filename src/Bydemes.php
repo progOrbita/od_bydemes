@@ -568,8 +568,9 @@ class Bydemes
         return $csv_values;
     }
     /**
-     * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be encoded
-     * It may have empty spaces and may not be closed in csv with <p>, which I need to add to compare both values
+     * post-processing description. Encode the string due to the existence of strings like iacute; or oacute; which needs to be at least encoded
+     * Attemps to format like prestashop, which I need to compare both values to check if they are differents.
+     * 
      * @param string $row_value description value to be processed
      * @return string description processed
      */
@@ -580,12 +581,12 @@ class Bydemes
         //removes all the empty space, usually at the end of the description
         $desc_trim = trim($utfText);
         //br at the end of the description field is removed in prestashop
-        $desc_rem_br = preg_replace('/<br>$/', '', $desc_trim);
-        //description may not have <p> at the beggining and the end. It's added if it's needed
-        stristr($desc_rem_br, '<p>') ? $desc_p = $desc_rem_br : $desc_p = '<p>' . $desc_rem_br . '</p>';
+        $desc_del_end_br = preg_replace('/<br>$/', '', $desc_trim);
+        //description may not have <p> open/closing the description, it's must have it always.
+        stristr($desc_del_end_br, '<p>') ? $desc_p = $desc_del_end_br : $desc_p = '<p>' . $desc_del_end_br . '</p>';
         //format <br> to <br />
         $desc_fix_br = str_replace('<br>', '<br />', $desc_p);
-        //Cleans img tag, style, class, id, empty p, emtpy span, lang attribute, br at the beggining...
+        //Removes img tag, style, class, lang or id attributes, empty p, emtpy span, br at the beggining...
         $patterns = [
             '/<img(.+)>/U',
             '/\sstyle="(.+)"/U',
@@ -597,29 +598,28 @@ class Bydemes
             '/<span \/>/',
             '/<span><\/span>/',
             '/\slang="(.+)"/U',
-            '/(?<=^<p>)\s?(<br \/>\s?)*|/m'
-            ];
-
-        //mod span, para no quitar
+            '/(?<=^<p>)\s?(<br \/>\s?)*|/m' //Lookbehind assertion, matches \s?(<br \/>\s?)* only if it's followed by ^<p>
+        ];
         $desc_clean = preg_replace($patterns, '', $desc_fix_br);
-        //decoded text for acute; ncute; and more symbols. htmlspecialchars converts all of them including the tags
-        //for &, is decodified to &amp; in prestashop
+
+        //htmlspecialchars converts all the special characters including the tags so I need to manage it.
+        //for &, is decodified in prestashop
         $desc_clean = preg_replace('/&/', "&amp;", $desc_clean);
-        //for greater than symbol, Prestashop decode it. Regex is pick the " >" followed (?=) by one or more numbers. To avoid changing open/close tags < and >
+        //for greater and lesser than symbol, Prestashop decode it. Attemps to decode it and avoid touching the tags.
+        //Pick the "\s>" followed (?=) by one or more numbers. To avoid changing open/close tags < and >. must have a space before it.
         $desc_clean = preg_replace('/\s>(?=\d+)/', "&gt;", $desc_clean);
-        //For lesser than
-        $desc_clean = preg_replace('/\s<(?=\d+)/', "&lt;", $desc_clean);
-        //Removes break lines (<br />) from the start of the description.
-        //Finds the <br /> followed by the start <p>, it may have an empty space and it can have more than one.
-        //Something something in 137A, because &nbsp; characters arent detected by \s
-        $desc_clean = preg_replace('/(?<=^<p>)\s?(<br \/>\s?)*|/m', '', $desc_clean);
-        //Finding <br /> and changing it for </p><p>
-        //If it have two spaces instead of one beetwen words
+        //For lesser than, it may not have the space.
+        $desc_clean = preg_replace('/\s?<(?=\d+)/', "&lt;", $desc_clean);
+        //If it have two spaces instead of one beetwen words removes one.
         $desc_clean = preg_replace('/\s\s/', ' ', $desc_clean);
-        //changes <br/> to <p>
-        $desc_clean = preg_replace('/(<br \/>\s?)+/','</p><p>',$desc_clean);
-        //for styles, in database without spaces.
-        $desc_clean = preg_replace('/<p><\/p>|<span \/>/U', '', $desc_clean);
+
+        //For some products with <tag><br/> </tag>. Remove later tag and puts it before <br/>, wild card from 0 to 5 characters because may be at some distance.
+        $desc_clean = preg_replace('/<br \/>.{0,5}<\/em>/', '</em><br />', $desc_clean);
+        $desc_clean = preg_replace('/<br \/>.{0,5}<\/strong>/', '</strong><br />', $desc_clean);
+
+        //changes <br/> to a new <p> (if it isn't followed by a nearing (0-20 characters) </span> tag).
+        $desc_clean = preg_replace('/(<br \/>\s?)+(?!(.){0,20}<\/span)/', '</p><p>', $desc_clean);
+
         return $desc_clean;
     }
 
