@@ -455,6 +455,7 @@ class Bydemes
 
                         case 'quantity':
                             if (!$ref_exist) {
+                                $csv_quantity = (int) $field_value;
                                 break;
                             }
                             $csv_quantity = (int) $field_value;
@@ -593,6 +594,7 @@ class Bydemes
                         //add new products
                         $new_prod->id_category_default = $default_category;
                         $new_prod->id_supplier = $this->bydemes_id;
+                        $new_prod->quantity = $csv_quantity;
                         $prod_add = $new_prod->add();
 
 
@@ -604,7 +606,7 @@ class Bydemes
                         $new_prod->addSupplierReference($this->bydemes_id, 0);
 
                         //If the product have more than 0 in stock, quantity is added
-                        if ($csv_quantity > 0) {
+                        if ((int) $csv_quantity > 0) {
                             $add_stock = StockAvailable::setQuantity($new_prod->id, 0, $csv_quantity);
                             if ($add_stock === false) {
                                 $this->tableData[$ref][] = 'add info: <b>Error adding stock for ' . $ref . '</b>';
