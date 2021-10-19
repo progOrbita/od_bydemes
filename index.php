@@ -25,7 +25,12 @@ if (!$data_file) {
     die($reader->getLastError());
 }
 $bydemes = new Bydemes($data_file, 'admin651fwyyde');
-
+$cats = $bydemes->getCategories();
+$arranged_products = $bydemes->saveCats($cats);
+print "<pre>";
+print_r($arranged_products);
+print "</pre>";
+die();
 $bydemes->processCsv();
 
 $bydemes->setCostPriceMargin(40);

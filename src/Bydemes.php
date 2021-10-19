@@ -717,4 +717,52 @@ class Bydemes
         return $cat_list;
     }
 
+    public function saveCats(array $categories_list)
+    {
+        $parents_data = [];
+
+        $longest_depth = Db::getInstance()->getValue('SELECT `level_depth` FROM `ps_category` ORDER BY `level_depth` DESC ');
+        for ($i=1; $i <= $longest_depth; $i++) { 
+            $parents_data[$i] = "";
+        }
+
+        $cat_arranged = [];
+        foreach ($categories_list as $cat_id => $cat_values) {
+            
+            $category_id = $cat_values['id_category'];
+            $parent = (int) $cat_values['nright'] - (int) $cat_values['nleft'] !== 1; //if distinct than 1, category is a parent
+            $category_name = $cat_values['name'];
+            $depth = $cat_values['level_depth'];
+            $insert = $category_id . ' ' . $category_name;
+        
+            switch ($depth) {
+                case 1:
+                    $cat_arranged[$insert] = [];
+                    $parents_data[1] = $insert;
+                    break;
+                case 2:
+                    $parent ? $cat_arranged[$parents_data[1]][$insert] = [] : $cat_arranged[$parents_data[1]][$insert] = "";
+                    $parents_data[2] = $insert;
+                    break;
+                case 3:
+                    $parent ? $cat_arranged[$parents_data[1]][$parents_data[2]][$insert] = [] : $cat_arranged[$parents_data[1]][$parents_data[2]][$insert] = "";
+                    $parents_data[3] = $insert;
+                    break;
+                case 4:
+                    $parent ? $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$insert] = [] : $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$insert] = "";
+                    $parents_data[4] = $insert;
+                    break;
+                case 5:
+                    $parent ? $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$parents_data[4]][$insert] = [] : $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$parents_data[4]][$insert] = "";
+                    $parents_data[5] = $insert;
+                    break;
+                case 6:
+                    $parent ? $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$parents_data[4]][$parents_data[5]][$insert] = [] : $cat_arranged[$parents_data[1]][$parents_data[2]][$parents_data[3]][$parents_data[4]][$parents_data[5]][$insert] = "";
+                    break;
+                default:
+                    break;
+            }
+        }
+        return $cat_arranged;
+    }
 }
