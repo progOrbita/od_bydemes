@@ -700,4 +700,21 @@ class Bydemes
         $tableEnd = '</tbody></table></body></html>';
         return $tableBase . $tableBody . $tableEnd;
     }
+
+    public function getCategories()
+    {
+        $cat_query = Db::getInstance()->executeS('SELECT ca.id_category, ca.id_parent, ca.nleft, ca.nright, ca.level_depth, cal.name
+        FROM `ps_category` ca 
+        INNER JOIN `ps_category_lang` cal ON ca.id_category = cal.id_category WHERE cal.id_lang = 1 ORDER BY `nleft` ASC');
+        //key -> id_category. value are the fields: id_category, id_parent, level_depth, nleft, nright and name from category_lang
+        $cat_list = [];
+        if ($cat_query === false) {
+            echo '<p>Error somewhere in the categories query</p>';
+        }
+        foreach ($cat_query as $key => $value) {
+            $cat_list[$value['id_category']] = $value;
+        }
+        return $cat_list;
+    }
+
 }
